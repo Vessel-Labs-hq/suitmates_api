@@ -6,10 +6,17 @@ import { AuthModule } from './modules/auth/auth.module';
 import { JwtModule } from "@nestjs/jwt";
 import { JWT_SECRET } from "./base";
 import { UserModule } from './modules/user/user.module';
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { envVarsSchema } from "./helpers/env.validator";
 
 
 @Module({
-  imports: [{
+  imports: [ConfigModule.forRoot({
+    isGlobal: true,
+    cache: true,
+    validationSchema: envVarsSchema,
+  }),
+  {
     ...JwtModule.register({
       secret: JWT_SECRET,
       signOptions: { expiresIn: "24h" },

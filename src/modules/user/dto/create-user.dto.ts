@@ -3,7 +3,7 @@ import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 
 export class CreateUserDto {
     @IsEmail()
     @IsNotEmpty()
-    email: String;
+    email: string;
 
     @IsString()
     @IsNotEmpty()
@@ -14,64 +14,64 @@ export class CreateUserDto {
     @IsNotEmpty()
     @MinLength(2)
     @MaxLength(20)
-    first_name: String;
+    first_name: string;
 
     @IsString()
     @IsNotEmpty()
     @MinLength(2)
     @MaxLength(20)
-    last_name: String;
+    last_name: string;
 
     @IsString()
     @IsNotEmpty()
     @MinLength(2)
     @MaxLength(20)
-    phone_number: String;
+    phone_number: string;
 
     @IsString()
     @IsNotEmpty()
     @MinLength(2)
     @MaxLength(100)
-    business_name: String;
+    business_name: string;
 
     @IsString()
     @IsNotEmpty()
-    days_of_business: String;
+    days_of_business: string;
 
     @IsString()
     @IsNotEmpty()
-    occupation: String;
+    occupation: string;
 
     @IsString()
     @IsNotEmpty()
-    hours_of_business_open: String;
+    hours_of_business_open: string;
 
     @IsString()
     @IsNotEmpty()
-    hours_of_business_close: String;
-
-    @IsString()
-    @IsNotEmpty()
-    @IsOptional()
-    website: String;
+    hours_of_business_close: string;
 
     @IsString()
     @IsNotEmpty()
     @IsOptional()
-    license: String;
+    website: string;
 
     @IsString()
     @IsNotEmpty()
     @IsOptional()
-    avatar: String;
+    license: string;
 
     @IsString()
     @IsNotEmpty()
     @IsOptional()
-    bio: String;
+    avatar: string;
 
     @IsString()
     @IsNotEmpty()
     @IsOptional()
-    role: String; // 'tenant' or 'owner'
+    bio: string;
+
+    @IsString()
+    @IsNotEmpty()
+    @IsOptional()
+    role: string; // 'tenant' or 'owner'
 }
