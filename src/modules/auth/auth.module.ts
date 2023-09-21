@@ -5,9 +5,9 @@ import { UserModule } from '../user/user.module';
 import { PrismaModule } from 'src/database/prisma.module';
 
 @Module({
-  imports: [UserModule,PrismaModule],
+  imports: [UserModule, PrismaModule],
   controllers: [AuthController],
   providers: [AuthService],
-  exports: [AuthService]
+  exports: [AuthService],
 })
 export class AuthModule {}
