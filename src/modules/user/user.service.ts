@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/database/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { DateHelper, ErrorHelper, PasswordHelper, Utils } from 'src/utils';
+import { RegisterUserDto } from '../auth/dto/register-user.dto';
 
 export const roundsOfHashing = 10;
 
@@ -11,6 +12,15 @@ export const roundsOfHashing = 10;
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
+  async register(userInfo: RegisterUserDto) {
+    const hashedPassword = await PasswordHelper.hashPassword(userInfo.password);
+
+    userInfo.password = hashedPassword;
+    return userInfo;
+    return this.prisma.user.create({
+      data: userInfo,
+    });
+  }
   async create(createUserDto: CreateUserDto) {
     const hashedPassword = await PasswordHelper.hashPassword(
       createUserDto.password,

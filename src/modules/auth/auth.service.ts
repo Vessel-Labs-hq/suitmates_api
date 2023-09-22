@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DateHelper, ErrorHelper, PasswordHelper, Utils } from 'src/utils';
+import { ErrorHelper } from 'src/utils';
 import { PrismaService } from 'src/database/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -38,7 +38,7 @@ export class AuthService {
         `User with email "${payload.email}" already exist`,
       );
     }
-    const newUser = await this.userService.create(payload);
+    const newUser = await this.userService.register(payload);
 
     return await this.signUserToken(newUser);
   }
