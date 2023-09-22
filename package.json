@@ -83,5 +83,8 @@
   },
   "prisma": {
     "schema": "./src/database/schema.prisma"
+  },
+  "engines": {
+    "node": "18"
   }
 }
