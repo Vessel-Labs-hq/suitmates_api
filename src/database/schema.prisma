@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -6,26 +9,26 @@ datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+  //shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Owner     Owner?
-  Tenant    Tenant?
-}
-
-model Owner {
-  id     Int  @id @default(autoincrement())
-  user   User @relation(fields: [userId], references: [id])
-  userId Int  @unique
-}
-
-model Tenant {
-  id     Int  @id @default(autoincrement())
-  user   User @relation(fields: [userId], references: [id])
-  userId Int  @unique
+  id                      Int      @id @default(autoincrement())
+  email                   String   @unique
+  first_name              String?
+  password                String
+  last_name               String?
+  phone_number            String?
+  business_name           String?
+  days_of_business        String?
+  occupation              String?
+  hours_of_business_open  String?
+  hours_of_business_close String?
+  website                 String?
+  license                 String?
+  avatar                  String?
+  bio                     String?
+  role                    String   @default("tenant") // 'tenant' or 'owner'
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 }
