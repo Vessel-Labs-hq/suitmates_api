@@ -12,11 +12,6 @@ export class CookieAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<any> {
     const req = context.switchToHttp().getRequest();
-
-    console.log('::::::::::; req?.cookies?.token', {
-      lsls: JSON.stringify(req?.cookies),
-      lsl: JSON.stringify(req?.signedCookies),
-    });
     if (!req?.cookies) {
       ErrorHelper.UnauthorizedException('Cookie header is missing');
     }
@@ -27,11 +22,8 @@ export class CookieAuthGuard implements CanActivate {
     }
 
     const user = await this.verifyAccessToken(authorization);
-    console.log('::::::::::; user', user);
 
     Object.assign(req, { user });
-
-    console.log('::::::::::; req.user', req.user);
     return true;
   }
 
