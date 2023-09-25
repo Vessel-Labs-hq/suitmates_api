@@ -4,22 +4,27 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/database/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { DateHelper, ErrorHelper, PasswordHelper, Utils } from "src/utils";
+import { SuiteService } from '../suite/suite.service';
 
 export const roundsOfHashing = 10;
 
 @Injectable()
 export class UserService {
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService,private readonly suiteService: SuiteService) {}
   
   async create(createUserDto: CreateUserDto) {
     const hashedPassword = await PasswordHelper.hashPassword(createUserDto.password);
 
     createUserDto.password = hashedPassword;
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: createUserDto,
     });
+
+    if(user.role == "owner"){
+      
+    }
   }
 
   findAll() {

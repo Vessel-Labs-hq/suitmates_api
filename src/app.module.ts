@@ -8,6 +8,7 @@ import { JWT_SECRET } from "./base";
 import { UserModule } from './modules/user/user.module';
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { envVarsSchema } from "./helpers/env.validator";
+import { SuiteModule } from './modules/suite/suite.module';
 
 
 @Module({
@@ -24,7 +25,7 @@ import { envVarsSchema } from "./helpers/env.validator";
     global: true,
   },
     PrismaModule, 
-    AuthModule, UserModule
+    AuthModule, UserModule, SuiteModule
   ],
   controllers: [AppController],
   providers: [AppService],
