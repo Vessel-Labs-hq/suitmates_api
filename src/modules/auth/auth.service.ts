@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DateHelper, ErrorHelper, PasswordHelper, Utils } from "src/utils";
+import { ErrorHelper } from 'src/utils';
 import { PrismaService } from 'src/database/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -8,10 +8,13 @@ import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwtService: JwtService,private userService: UserService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+    private userService: UserService,
+  ) {}
 
   async login(email: string, password: string) {
-    
     const user = await this.prisma.user.findUnique({ where: { email: email } });
 
     if (!user) {
@@ -25,15 +28,17 @@ export class AuthService {
     return await this.signUserToken(user);
   }
 
-  async register(payload: RegisterUserDto){
-    const emailExists = await this.prisma.user.findUnique({ where: { email: payload.email }});
+  async register(payload: RegisterUserDto) {
+    const emailExists = await this.prisma.user.findUnique({
+      where: { email: payload.email },
+    });
 
     if (emailExists) {
       ErrorHelper.ConflictException(
-        `User with email "${payload.email}" already exist`
+        `User with email "${payload.email}" already exist`,
       );
     }
-    const newUser = await this.userService.create(payload);
+    const newUser = await this.userService.register(payload);
 
     return await this.signUserToken(newUser);
   }

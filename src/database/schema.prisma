@@ -6,48 +6,48 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url= env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-//shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  //shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model User {
-    id        Int      @id @default(autoincrement())
-    email     String   @unique
-    first_name      String?
-    password      String?
-    last_name      String?
-    phone_number      String?
-    business_name      String?
-    days_of_business      String?
-    occupation      String?
-    hours_of_business_open      String?
-    hours_of_business_close      String?
-    website      String?
-    license      String?
-    avatar      String?
-    space_name      String?
-    space_address      String?
-    space_size      String?
-    space_amenities      String?
-    bio      String?
-    role      String   @default("tenant")// 'tenant' or 'owner'
-    suites    Suite[]
-    account_number String?
-    account_name String?
-    routing_number String?
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id                      Int      @id @default(autoincrement())
+  email                   String   @unique
+  first_name              String?
+  password                String?
+  last_name               String?
+  phone_number            String?
+  business_name           String?
+  days_of_business        String?
+  occupation              String?
+  hours_of_business_open  String?
+  hours_of_business_close String?
+  website                 String?
+  license                 String?
+  avatar                  String?
+  space_name              String?
+  space_address           String?
+  space_size              String?
+  space_amenities         String?
+  bio                     String?
+  role                    String   @default("tenant") // 'tenant' or 'owner'
+  suites                  Suite[]
+  account_number          String?
+  account_name            String?
+  routing_number          String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 }
 
 model Suite {
-  id          Int      @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   suite_number String
   suite_type   String
   suite_size   String
   suite_cost   String
   timing       String
-  user_id     Int
-  user        User     @relation(fields: [user_id], references: [id])
+  user_id      Int
+  user         User   @relation(fields: [user_id], references: [id])
 }

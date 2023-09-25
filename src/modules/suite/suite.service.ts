@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSuiteDto } from './dto/create-suite.dto';
+import { CreateSuiteDto, SuiteItemDto } from './dto/create-suite.dto';
 import { UpdateSuiteDto } from './dto/update-suite.dto';
 import { PrismaService } from 'src/database/prisma.service';
 
@@ -8,7 +8,7 @@ export class SuiteService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async createSuites(data: CreateSuiteDto, userId: number) {
+  async createSuites(data: SuiteItemDto, userId: number) {
     return this.prisma.suite.create({
       data: {
         ...data,
