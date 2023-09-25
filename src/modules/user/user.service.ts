@@ -16,7 +16,6 @@ export class UserService {
     const hashedPassword = await PasswordHelper.hashPassword(userInfo.password);
 
     userInfo.password = hashedPassword;
-    return userInfo;
     return this.prisma.user.create({
       data: userInfo,
     });
