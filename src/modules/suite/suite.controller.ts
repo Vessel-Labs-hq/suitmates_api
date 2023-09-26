@@ -2,23 +2,43 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { SuiteService } from './suite.service';
 import { CreateSuiteDto } from './dto/create-suite.dto';
 import { UpdateSuiteDto } from './dto/update-suite.dto';
+import { IUser, User } from 'src/decorators';
+import { CreateSuiteInformationDto } from './dto/create-suite-information.dto';
+import { HttpResponse } from 'src/utils';
+
 
 @Controller('suite')
 export class SuiteController {
   constructor(private readonly suiteService: SuiteService) {}
 
   @Post()
-  async create(@Body() createSuiteDto: CreateSuiteDto,@Param('userId') userId: number) {
-     // Call the service to create and save the suites
-     for (const suiteItem of createSuiteDto.suites) {
-      await this.suiteService.createSuites(suiteItem, userId);
-    }
-    return 'Suites created successfully';
+  async create(@Body() createSuiteDto: CreateSuiteDto,@User() user: IUser) {
+
+    const suite = await this.suiteService.createSuite(createSuiteDto, user.id);
+    return HttpResponse.success({
+      data: suite,
+      message: 'Suite created successfully',
+    });
+  }
+
+  @Post('create-suit-information')
+  async createSuitInformation(@Body() createSuiteInformationDto: CreateSuiteInformationDto,@Param('suite_id') suite_id: string) {
+    
+    const info = await this.suiteService.createSuiteInformation(createSuiteInformationDto, +suite_id);
+    return HttpResponse.success({
+      data: info,
+      message: 'Suite information created successfully',
+    });
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.suiteService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+
+    const suite = await this.suiteService.findOne(+id);
+    return HttpResponse.success({
+      data: suite,
+      message: 'Suite information created successfully',
+    });
   }
 
   @Patch(':id')

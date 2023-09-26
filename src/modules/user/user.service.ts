@@ -5,6 +5,7 @@ import { PrismaService } from 'src/database/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { DateHelper, ErrorHelper, PasswordHelper, Utils } from 'src/utils';
 import { RegisterUserDto } from '../auth/dto/register-user.dto';
+import { Prisma } from '@prisma/client';
 
 export const roundsOfHashing = 10;
 
@@ -13,13 +14,19 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async register(userInfo: RegisterUserDto) {
-    const hashedPassword = await PasswordHelper.hashPassword(userInfo.password);
+    const hashedPassword = await PasswordHelper.hashPassword(
+      userInfo.password,
+    );
 
     userInfo.password = hashedPassword;
-    return userInfo;
-    return this.prisma.user.create({
-      data: userInfo,
-    });
+
+    const data: Prisma.UserCreateArgs = {
+      data: {
+        email: userInfo.email,
+        password: userInfo.password,
+      },
+    };
+    return await this.prisma.user.create(data);
   }
   async create(createUserDto: CreateUserDto) {
     const hashedPassword = await PasswordHelper.hashPassword(

@@ -13,41 +13,63 @@ datasource db {
 }
 
 model User {
-  id                      Int      @id @default(autoincrement())
-  email                   String   @unique
-  first_name              String?
-  password                String?
-  last_name               String?
-  phone_number            String?
-  business_name           String?
-  days_of_business        String?
-  occupation              String?
-  hours_of_business_open  String?
-  hours_of_business_close String?
-  website                 String?
-  license                 String?
-  avatar                  String?
-  space_name              String?
-  space_address           String?
-  space_size              String?
-  space_amenities         String?
-  bio                     String?
-  role                    String   @default("tenant") // 'tenant' or 'owner'
-  suites                  Suite[]
-  account_number          String?
-  account_name            String?
-  routing_number          String?
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  id           Int        @id @default(autoincrement())
+  email        String     @unique
+  first_name   String?
+  password     String?
+  last_name    String?
+  phone_number String?
+  avatar       String?
+  bio          String?
+  role         String     @default("tenant") // 'tenant' or 'owner'
+  suites       Suite[]
+  businesses   Business[]
+  onboarded    Boolean    @default(false)
+  verified     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 model Suite {
-  id           Int    @id @default(autoincrement())
+  id                Int                @id @default(autoincrement())
+  user_id           Int
+  user              User               @relation(fields: [user_id], references: [id])
+  suite_information SuiteInformation[]
+  space_name        String
+  space_address     String
+  space_size        Int
+  space_amenities   String
+  account_number    String
+  account_name      String
+  routing_number    String
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+model SuiteInformation {
+  id           Int      @id @default(autoincrement())
   suite_number String
   suite_type   String
   suite_size   String
-  suite_cost   String
+  suite_cost   Int
   timing       String
-  user_id      Int
-  user         User   @relation(fields: [user_id], references: [id])
+  suite_id     Int
+  suite        Suite    @relation(fields: [suite_id], references: [id])
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Business {
+  id                      Int      @id @default(autoincrement())
+  business_name           String
+  days_of_business        String
+  occupation              String
+  hours_of_business_open  String
+  hours_of_business_close String
+  website                 String
+  license                 String
+  user_id                 Int
+  user                    User     @relation(fields: [user_id], references: [id])
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
 }

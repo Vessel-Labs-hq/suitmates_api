@@ -48,6 +48,8 @@ export class AuthService {
       role: user.role,
       email: user.email,
       id: user._id,
+      onboarded: user.onboarded,
+      verified: user.verified
     };
 
     const token = this.jwtService.sign(userInfo);

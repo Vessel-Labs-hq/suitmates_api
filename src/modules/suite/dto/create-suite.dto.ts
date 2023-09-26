@@ -1,31 +1,32 @@
-import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import {IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateSuiteDto {
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SuiteItemDto)
-  suites: SuiteItemDto[];
-}
-
-export class SuiteItemDto {
-  @IsNotEmpty()
-  @IsString()
-  suite_number: string;
 
   @IsNotEmpty()
   @IsString()
-  suite_type: string;
-
+  space_name:      string;
+  
   @IsNotEmpty()
   @IsString()
-  suite_size: string;
-
+  space_address:   string;
+  
   @IsNotEmpty()
   @IsString()
-  suite_cost: string;
-
+  space_size:      number;
+  
   @IsNotEmpty()
   @IsString()
-  timing: string;
+  space_amenities: string;
+  
+  @IsNotEmpty()
+  @IsString()
+  account_number:  string;
+  
+  @IsNotEmpty()
+  @IsString()
+  account_name:    string;
+  
+  @IsNotEmpty()
+  @IsString()
+  routing_number:  string;
 }

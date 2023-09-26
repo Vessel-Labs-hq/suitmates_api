@@ -9,6 +9,7 @@ import { UserModule } from './modules/user/user.module';
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { envVarsSchema } from "./helpers/env.validator";
 import { SuiteModule } from './modules/suite/suite.module';
+import { BusinessModule } from './modules/business/business.module';
 
 
 @Module({
@@ -25,7 +26,7 @@ import { SuiteModule } from './modules/suite/suite.module';
     global: true,
   },
     PrismaModule, 
-    AuthModule, UserModule, SuiteModule
+    AuthModule, UserModule, SuiteModule, BusinessModule
   ],
   controllers: [AppController],
   providers: [AppService],

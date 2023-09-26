@@ -1,18 +1,28 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSuiteDto, SuiteItemDto } from './dto/create-suite.dto';
+import { CreateSuiteDto } from './dto/create-suite.dto';
 import { UpdateSuiteDto } from './dto/update-suite.dto';
 import { PrismaService } from 'src/database/prisma.service';
+import { CreateSuiteInformationDto } from './dto/create-suite-information.dto';
 
 @Injectable()
 export class SuiteService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async createSuites(data: SuiteItemDto, userId: number) {
+  async createSuite(data: CreateSuiteDto, userId: number) {
     return this.prisma.suite.create({
       data: {
         ...data,
         user: { connect: { id: userId } }
+      },
+    });
+  }
+
+  async createSuiteInformation(data: CreateSuiteInformationDto, suite_id: number){
+    return this.prisma.suiteInformation.create({
+      data: {
+        ...data,
+      suite:{connect: {id: suite_id}} 
       },
     });
   }
