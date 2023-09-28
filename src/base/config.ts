@@ -6,6 +6,7 @@ config();
 const configService = new ConfigService();
 
 export const PORT = configService.get("PORT");
+export const FRONTEND_URL = configService.get("FRONTEND_URL");
 export const JWT_SECRET = configService.get("JWT_SECRET");
 export const GOOGLE_CLIENT_ID = configService.get("GOOGLE_CLIENT_ID");
 export const GOOGLE_CLIENT_SECRET = configService.get("GOOGLE_CLIENT_SECRET");
