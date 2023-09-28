@@ -3,6 +3,7 @@ import { CreateSuiteDto } from './dto/create-suite.dto';
 import { UpdateSuiteDto } from './dto/update-suite.dto';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateSuiteInformationDto } from './dto/create-suite-information.dto';
+import { ErrorHelper } from 'src/utils';
 
 @Injectable()
 export class SuiteService {
@@ -19,23 +20,34 @@ export class SuiteService {
   }
 
   async createSuiteInformation(data: CreateSuiteInformationDto, suite_id: number){
+    const suite = await this.findOne(suite_id);
+    if (suite == null || suite == undefined ) {
+      ErrorHelper.BadRequestException(`No suite found`);
+    }
     return this.prisma.suiteInformation.create({
       data: {
         ...data,
-      suite:{connect: {id: suite_id}} 
+      suite:{connect: {id: suite.id}} 
       },
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} suite`;
+  async findOne(id: number) {
+    return this.prisma.suite.findFirst({
+      where:{
+        id
+      }
+    });
   }
 
-  update(id: number, updateSuiteDto: UpdateSuiteDto) {
-    return `This action updates a #${id} suite`;
+  async update(id: number, updateSuiteDto: UpdateSuiteDto) {
+    return await this.prisma.suite.update({
+      where: { id },
+      data: updateSuiteDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} suite`;
+  async remove(id: number) {
+    return await this.prisma.suite.delete({ where: { id } });
   }
 }

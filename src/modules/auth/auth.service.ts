@@ -5,6 +5,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { UserService } from '../user/user.service';
+import { RegisterTenantDto } from './dto/register-tenant.dto';
+import { EmailService } from './../email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -12,6 +14,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private userService: UserService,
+    private emailService: EmailService
   ) {}
 
   async login(email: string, password: string) {
@@ -43,6 +46,27 @@ export class AuthService {
     return await this.signUserToken(newUser);
   }
 
+  async registerTenant(payload: RegisterTenantDto){
+    const emailExists = await this.prisma.user.findUnique({
+      where: { email: payload.email },
+    });
+    if (emailExists) {
+      ErrorHelper.ConflictException(
+        `User with email "${payload.email}" already exist`,
+      );
+    }
+    const password: string = this.generateRandomString(8)
+    const data = {
+      email: payload.email,
+      password: password,
+      role: 'tenant',
+    }
+    const newUser = await this.userService.register(data);
+    await this.emailService.sendUserWelcome(payload.email, password);
+    return newUser;
+
+  }
+
   private async signUserToken(user: any) {
     const userInfo = {
       role: user.role,
@@ -59,4 +83,15 @@ export class AuthService {
       accessToken: token,
     };
   }
+
+  private generateRandomString(length: number) {
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for (var i = 0; i < length; i++) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
+  
 }

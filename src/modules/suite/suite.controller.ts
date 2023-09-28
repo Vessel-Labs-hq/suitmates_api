@@ -1,12 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete,UseGuards } from '@nestjs/common';
 import { SuiteService } from './suite.service';
 import { CreateSuiteDto } from './dto/create-suite.dto';
 import { UpdateSuiteDto } from './dto/update-suite.dto';
 import { IUser, User } from 'src/decorators';
 import { CreateSuiteInformationDto } from './dto/create-suite-information.dto';
 import { HttpResponse } from 'src/utils';
+import { AuthGuard } from 'src/guards/auth.guard';
 
-
+@UseGuards(AuthGuard)
 @Controller('suite')
 export class SuiteController {
   constructor(private readonly suiteService: SuiteService) {}
@@ -23,7 +24,7 @@ export class SuiteController {
 
   @Post('create-suit-information')
   async createSuitInformation(@Body() createSuiteInformationDto: CreateSuiteInformationDto,@Param('suite_id') suite_id: string) {
-    
+
     const info = await this.suiteService.createSuiteInformation(createSuiteInformationDto, +suite_id);
     return HttpResponse.success({
       data: info,
@@ -37,17 +38,26 @@ export class SuiteController {
     const suite = await this.suiteService.findOne(+id);
     return HttpResponse.success({
       data: suite,
-      message: 'Suite information created successfully',
+      message: 'Suite information retrieved successfully',
     });
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSuiteDto: UpdateSuiteDto) {
-    return this.suiteService.update(+id, updateSuiteDto);
+  async update(@Param('id') id: string, @Body() updateSuiteDto: UpdateSuiteDto) {
+    const suite = await this.suiteService.update(+id, updateSuiteDto);
+    return HttpResponse.success({
+      data: suite,
+      message: 'Suite information updated successfully',
+    });
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.suiteService.remove(+id);
+  async remove(@Param('id') id: string) {
+    const suite = await this.suiteService.remove(+id);
+
+    return HttpResponse.success({
+      data: suite,
+      message: 'Suite deleted successfully',
+    });
   }
 }

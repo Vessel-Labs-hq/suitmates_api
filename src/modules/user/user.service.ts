@@ -28,28 +28,13 @@ export class UserService {
     };
     return await this.prisma.user.create(data);
   }
-  async create(createUserDto: CreateUserDto) {
-    const hashedPassword = await PasswordHelper.hashPassword(
-      createUserDto.password,
-    );
 
-    createUserDto.password = hashedPassword;
-
-    const user = await this.prisma.user.create({
-      data: createUserDto,
-    });
-
-    if(user.role == "owner"){
-      
-    }
+  async findAll() {
+    return await this.prisma.user.findMany();
   }
 
-  findAll() {
-    return this.prisma.user.findMany();
-  }
-
-  findOne(id: number) {
-    return this.prisma.user.findUnique({ where: { id } });
+  async findOne(id: number) {
+    return await this.prisma.user.findUnique({ where: { id } });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -60,13 +45,13 @@ export class UserService {
       );
     }
 
-    return this.prisma.user.update({
+    return await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
     });
   }
 
-  remove(id: number) {
-    return this.prisma.user.delete({ where: { id } });
+  async remove(id: number) {
+    return await this.prisma.user.delete({ where: { id } });
   }
 }
