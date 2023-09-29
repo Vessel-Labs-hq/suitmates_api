@@ -1,4 +1,4 @@
-import {IsNotEmpty, IsString} from 'class-validator';
+import {IsNotEmpty, IsString, IsNumber} from 'class-validator';
 
 export class CreateSuiteInformationDto {
   
@@ -15,7 +15,7 @@ export class CreateSuiteInformationDto {
   suite_size: string;
 
   @IsNotEmpty()
-  @IsString()
+  @IsNumber()
   suite_cost: number;
 
   @IsNotEmpty()

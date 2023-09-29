@@ -22,7 +22,7 @@ export class SuiteController {
     });
   }
 
-  @Post('create-suit-information')
+  @Post(':suite_id/create-suit-information')
   async createSuitInformation(@Body() createSuiteInformationDto: CreateSuiteInformationDto,@Param('suite_id') suite_id: string) {
 
     const info = await this.suiteService.createSuiteInformation(createSuiteInformationDto, +suite_id);

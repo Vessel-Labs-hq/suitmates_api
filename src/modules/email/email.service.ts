@@ -5,15 +5,15 @@ import { Injectable } from '@nestjs/common';
 export class EmailService {
     constructor(private mailerService: MailerService) {}
 
-    async sendUserWelcome(user: any, password: string) {
-        const confirmation_url = `example.com/auth/confirm?email=${user.email}&password=${password}`;
+    async sendUserWelcome(email: any, password: string) {
+        const confirmation_url = `https://beta.tenant.mysuitemates.com/auth/login?email=${email}&password=${password}`;
     
         await this.mailerService.sendMail({
-          to: user.email,
+          to: email,
           subject: 'Welcome to Suite Mate! Confirm your Email',
-          template: './welcome', // `.ejs` extension is appended automatically
+          template: '../../../mail/templates/welcome', // `.ejs` extension is appended automatically
           context: { // filling <%= %> brackets with content
-            name: `${user.first_name} ${user.last_name}`,
+            name: ``,
             confirmation_url,
             default_password: password
           },

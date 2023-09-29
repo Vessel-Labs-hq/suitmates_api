@@ -71,7 +71,7 @@ export class AuthService {
     const userInfo = {
       role: user.role,
       email: user.email,
-      id: user._id,
+      id: user.id,
       onboarded: user.onboarded,
       verified: user.verified
     };

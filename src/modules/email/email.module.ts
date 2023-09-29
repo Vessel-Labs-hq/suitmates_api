@@ -12,13 +12,14 @@ import { ConfigService } from '@nestjs/config';
         transport: {
           host: config.get('MAIL_HOST'),
           secure: false,
+          port: config.get('MAIL_PORT'),
           auth: {
             user: config.get('MAIL_USER'),
             pass: config.get('MAIL_PASSWORD'),
           },
         },
         defaults: {
-          from: `"Suite Mate" <${config.get('MAIL_USER')}>`,
+          from: `Suite Mate <${config.get('MAIL_USER')}>`,
         },
         template: {
           dir: join(__dirname, 'templates'),
