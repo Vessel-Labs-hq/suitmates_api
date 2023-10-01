@@ -32,9 +32,4 @@ export class CreateBusinessDto {
     @IsNotEmpty()
     @IsOptional()
     website: string;
-
-    @IsString()
-    @IsNotEmpty()
-    @IsOptional()
-    license: string;
 }
