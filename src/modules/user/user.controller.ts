@@ -7,7 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
-  UseInterceptors
+  UseInterceptors,
+  UploadedFile
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -15,11 +16,13 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { HttpResponse } from 'src/utils';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AwsS3Service } from 'src/aws/aws-s3.service';
+import { ValidatedImage } from 'src/decorators';
 
 @UseGuards(AuthGuard)
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService,private readonly awsS3Service: AwsS3Service) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
@@ -52,9 +55,10 @@ export class UserController {
   }
 
   @Patch(':id')
-  @UseInterceptors(FileInterceptor('avatar'))
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  @ValidatedImage('avatar')
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto,@UploadedFile() avatar: Express.Multer.File) {
     const user = await this.userService.update(+id, updateUserDto);
+    // const avatarLink = await this.awsS3Service.uploadFile('profile',avatar.buffer)
     return HttpResponse.success({
       data: user,
       message: 'User updated successfully',
