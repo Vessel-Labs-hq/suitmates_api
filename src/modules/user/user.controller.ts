@@ -57,8 +57,9 @@ export class UserController {
   @Patch(':id')
   @ValidatedImage('avatar')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto,@UploadedFile() avatar: Express.Multer.File) {
+    const avatarLink = await this.awsS3Service.uploadFile(avatar.originalname,avatar.buffer)
+    updateUserDto.avatar = avatarLink;
     const user = await this.userService.update(+id, updateUserDto);
-    // const avatarLink = await this.awsS3Service.uploadFile('profile',avatar.buffer)
     return HttpResponse.success({
       data: user,
       message: 'User updated successfully',
