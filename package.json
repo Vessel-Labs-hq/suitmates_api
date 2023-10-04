@@ -93,6 +93,6 @@
     "schema": "./src/database/schema.prisma"
   },
   "engines": {
-    "node": "18"
+    "node": "16"
   }
 }
