@@ -1,41 +1,33 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { RequestHeadersEnum } from 'src/enums/base.enum';
+// import { RequestHeadersEnum } from 'src/enums/base.enum';
 
 import { ErrorHelper } from '../utils';
+// import { Request } from 'express';
+// import { IUserTokenInfo } from 'src/types';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class CookieAuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<any> {
     const req = context.switchToHttp().getRequest();
-
-    let authorization: string;
-    if (!req.headers) {
-      authorization = req.handshake.headers[RequestHeadersEnum.Authorization];
-    } else {
-      authorization = req.headers[RequestHeadersEnum.Authorization];
+    if (!req?.cookies) {
+      ErrorHelper.UnauthorizedException('Cookie header is missing');
     }
 
+    const authorization: string = req?.cookies?.token;
     if (!authorization) {
-      ErrorHelper.UnauthorizedException('Authorization header is missing');
+      ErrorHelper.UnauthorizedException('Authorization token is missing');
     }
 
     const user = await this.verifyAccessToken(authorization);
 
-    req.user = user;
-
+    Object.assign(req, { user });
     return true;
   }
 
-  async verifyAccessToken(authorization: string) {
-    const [bearer, accessToken] = authorization.split(' ');
-
-    if (bearer !== 'Bearer') {
-      ErrorHelper.UnauthorizedException('Authorization should be Bearer');
-    }
-
+  async verifyAccessToken(accessToken: string) {
     if (!accessToken) {
       ErrorHelper.UnauthorizedException('Access token is missing');
     }
