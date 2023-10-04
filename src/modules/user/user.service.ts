@@ -5,6 +5,7 @@ import { PrismaService } from 'src/database/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { DateHelper, ErrorHelper, PasswordHelper, Utils } from 'src/utils';
 import { RegisterUserDto } from '../auth/dto/register-user.dto';
+import { Prisma } from '@prisma/client';
 
 export const roundsOfHashing = 10;
 
@@ -13,31 +14,27 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async register(userInfo: RegisterUserDto) {
-    const hashedPassword = await PasswordHelper.hashPassword(userInfo.password);
-
-    userInfo.password = hashedPassword;
-    return this.prisma.user.create({
-      data: userInfo,
-    });
-  }
-  async create(createUserDto: CreateUserDto) {
     const hashedPassword = await PasswordHelper.hashPassword(
-      createUserDto.password,
+      userInfo.password,
     );
 
-    createUserDto.password = hashedPassword;
+    userInfo.password = hashedPassword;
 
-    return this.prisma.user.create({
-      data: createUserDto,
-    });
+    const data: Prisma.UserCreateArgs = {
+      data: {
+        email: userInfo.email,
+        password: userInfo.password,
+      },
+    };
+    return await this.prisma.user.create(data);
   }
 
-  findAll() {
-    return this.prisma.user.findMany();
+  async findAll() {
+    return await this.prisma.user.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.user.findUnique({ where: { id } });
+  async findOne(id: number) {
+    return await this.prisma.user.findUnique({ where: { id } });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -48,13 +45,13 @@ export class UserService {
       );
     }
 
-    return this.prisma.user.update({
+    return await this.prisma.user.update({
       where: { id },
       data: updateUserDto,
     });
   }
 
-  remove(id: number) {
-    return this.prisma.user.delete({ where: { id } });
+  async remove(id: number) {
+    return await this.prisma.user.delete({ where: { id } });
   }
 }

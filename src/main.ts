@@ -1,11 +1,9 @@
 import { NestFactory } from '@nestjs/core';
-import { ConfigService } from '@nestjs/config';
-import { Logger } from '@nestjs/common';
-import * as cookieParser from 'cookie-parser';
-
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './filters';
 import rawBodyMiddleware from './utils/rawBody.middleware';
+import { ConfigService } from '@nestjs/config';
+import { Logger } from '@nestjs/common';
 import { ValidationPipe } from './pipes';
 
 async function bootstrap() {
@@ -15,7 +13,7 @@ async function bootstrap() {
   app.enableCors({
     origin: ['http://localhost:3000', '*'],
   });
-  app.use(cookieParser());
+
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new HttpExceptionFilter());
   app.use(rawBodyMiddleware());
