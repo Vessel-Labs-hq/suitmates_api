@@ -8,7 +8,7 @@ import {
   Delete,
   UseGuards,
   UseInterceptors,
-  UploadedFile
+  UploadedFile,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -22,11 +22,14 @@ import { ValidatedImage } from 'src/decorators';
 @UseGuards(AuthGuard)
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService,private readonly awsS3Service: AwsS3Service) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly awsS3Service: AwsS3Service,
+  ) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
-    const user = await  this.userService.register(createUserDto);
+    const user = await this.userService.register(createUserDto);
 
     return HttpResponse.success({
       data: user,
@@ -56,8 +59,15 @@ export class UserController {
 
   @Patch(':id')
   @ValidatedImage('avatar')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto,@UploadedFile() avatar: Express.Multer.File) {
-    const avatarLink = await this.awsS3Service.uploadFile(avatar.originalname,avatar.buffer)
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() avatar: Express.Multer.File,
+  ) {
+    const avatarLink = await this.awsS3Service.uploadFile(
+      avatar.originalname,
+      avatar.buffer,
+    );
     updateUserDto.avatar = avatarLink;
     const user = await this.userService.update(+id, updateUserDto);
     return HttpResponse.success({
