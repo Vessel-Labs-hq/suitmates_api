@@ -62,6 +62,7 @@ export class UserController {
   async update(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
+    //@ts-ignore
     @UploadedFile() avatar: Express.Multer.File,
   ) {
     const avatarLink = await this.awsS3Service.uploadFile(
