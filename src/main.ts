@@ -1,13 +1,21 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './filters';
 import rawBodyMiddleware from './utils/rawBody.middleware';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { ValidationPipe } from './pipes';
+import { RolesGuard } from './guards/roles.guard';
+import { AuthGuard } from './guards/auth.guard';
+import { JwtService } from '@nestjs/jwt';
+import { JWT_SECRET } from './base';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalGuards(new AuthGuard(new JwtService({
+    secret: JWT_SECRET,
+    signOptions: { expiresIn: "24h" },
+  })), new RolesGuard(app.get(Reflector)));
   const logger = new Logger('NestApplication');
 
   app.enableCors({

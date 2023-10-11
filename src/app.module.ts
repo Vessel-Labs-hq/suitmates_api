@@ -11,6 +11,7 @@ import { envVarsSchema } from "./helpers/env.validator";
 import { SuiteModule } from './modules/suite/suite.module';
 import { BusinessModule } from './modules/business/business.module';
 import { EmailModule } from './modules/email/email.module';
+import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 
 
 @Module({
@@ -27,7 +28,7 @@ import { EmailModule } from './modules/email/email.module';
     global: true,
   },
     PrismaModule, 
-    AuthModule, UserModule, SuiteModule, BusinessModule, EmailModule
+    AuthModule, UserModule, SuiteModule, BusinessModule, EmailModule, MaintenanceModule
   ],
   controllers: [AppController],
   providers: [AppService],
