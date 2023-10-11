@@ -11,27 +11,24 @@ import { envVarsSchema } from './helpers/env.validator';
 import { SuiteModule } from './modules/suite/suite.module';
 import { BusinessModule } from './modules/business/business.module';
 import { EmailModule } from './modules/email/email.module';
+import { MaintenanceModule } from './modules/maintenance/maintenance.module';
+
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      cache: true,
-      validationSchema: envVarsSchema,
+  imports: [ConfigModule.forRoot({
+    isGlobal: true,
+    cache: true,
+    validationSchema: envVarsSchema,
+  }),
+  {
+    ...JwtModule.register({
+      secret: JWT_SECRET,
+      signOptions: { expiresIn: "24h" },
     }),
-    {
-      ...JwtModule.register({
-        secret: JWT_SECRET,
-        signOptions: { expiresIn: '24h' },
-      }),
-      global: true,
-    },
-    PrismaModule,
-    AuthModule,
-    UserModule,
-    SuiteModule,
-    BusinessModule,
-    EmailModule,
+    global: true,
+  },
+    PrismaModule, 
+    AuthModule, UserModule, SuiteModule, BusinessModule, EmailModule, MaintenanceModule
   ],
   controllers: [AppController],
   providers: [AppService],
