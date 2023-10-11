@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { SuiteService } from './suite.service';
 import { CreateSuiteDto } from './dto/create-suite.dto';
 import { UpdateSuiteDto } from './dto/update-suite.dto';
@@ -40,7 +49,6 @@ export class SuiteController {
   @Get(':id')
   @Roles(Role.Owner)
   async findOne(@Param('id') id: string) {
-
     const suite = await this.suiteService.findOne(+id);
     return HttpResponse.success({
       data: suite,
