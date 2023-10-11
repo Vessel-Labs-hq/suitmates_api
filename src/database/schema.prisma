@@ -35,14 +35,12 @@ model User {
   verified             Boolean              @default(false)
   created_at           DateTime             @default(now())
   updated_at           DateTime             @updatedAt
-  suiteId              Int
-  Suite                Suite[]
 }
 
 model Suite {
   id                   Int                  @id @default(autoincrement())
-  owner                User                 @relation("owned_suite", fields: [owner_id], references: [id])
-  owner_id             Int                  @unique // the owner of the suite
+  owner                User?                 @relation("owned_suite", fields: [owner_id], references: [id])
+  owner_id             Int?                  @unique // the owner of the suite
   tenants              User[]               @relation("rented_suite") // the tenants of the suite
   suite_informations   SuiteInformation[]
   maintenance_requests MaintenanceRequest[]
@@ -55,7 +53,6 @@ model Suite {
   routing_number       String
   created_at           DateTime             @default(now())
   updated_at           DateTime             @updatedAt
-  User                 User[]
 }
 
 model SuiteInformation {
