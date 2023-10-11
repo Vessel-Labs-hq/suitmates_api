@@ -21,7 +21,7 @@ model User {
   phone_number         String?
   avatar               String?
   bio                  String?
-  role                 String               @default("tenant") // 'tenant' or 'owner'
+  role                 String               @default("owner") // 'tenant' or 'owner'
   owned_suite          Suite?               @relation("owned_suite") // an owner must have one suite
   owned_suite_id       Int?                 @unique // the id of the owned suite 
   rented_suite         Suite?               @relation("rented_suite", fields: [rented_suite_id], references: [id]) // a tenant can have zero or one suite
