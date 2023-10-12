@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterTenantDto } from './dto/register-tenant.dto';
+import { VerifyTokenDto } from './dto/verify-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -21,5 +22,10 @@ export class AuthController {
   @Post('register-tenant')
   registerTenant(@Body() registerTenantDto: RegisterTenantDto) {
     return this.authService.registerTenant(registerTenantDto);
+  }
+
+  @Post('verify-token')
+  verifyToken(@Body() verifyTokenDto: VerifyTokenDto){
+    return this.authService.VerifyToken(verifyTokenDto);
   }
 }

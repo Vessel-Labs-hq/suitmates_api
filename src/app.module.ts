@@ -6,11 +6,12 @@ import { AuthModule } from './modules/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JWT_SECRET } from './base';
 import { UserModule } from './modules/user/user.module';
-import { ConfigModule, ConfigService } from "@nestjs/config";
-import { envVarsSchema } from "./helpers/env.validator";
+import { ConfigModule } from '@nestjs/config';
+import { envVarsSchema } from './helpers/env.validator';
 import { SuiteModule } from './modules/suite/suite.module';
 import { BusinessModule } from './modules/business/business.module';
 import { EmailModule } from './modules/email/email.module';
+import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 
 
 @Module({
@@ -27,7 +28,7 @@ import { EmailModule } from './modules/email/email.module';
     global: true,
   },
     PrismaModule, 
-    AuthModule, UserModule, SuiteModule, BusinessModule, EmailModule
+    AuthModule, UserModule, SuiteModule, BusinessModule, EmailModule, MaintenanceModule
   ],
   controllers: [AppController],
   providers: [AppService],

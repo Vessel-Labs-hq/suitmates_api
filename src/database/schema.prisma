@@ -13,37 +13,46 @@ datasource db {
 }
 
 model User {
-  id           Int        @id @default(autoincrement())
-  email        String     @unique
-  first_name   String?
-  password     String?
-  last_name    String?
-  phone_number String?
-  avatar       String?
-  bio          String?
-  role         String     @default("tenant") // 'tenant' or 'owner'
-  suites       Suite[]
-  businesses   Business[]
-  onboarded    Boolean    @default(false)
-  verified     Boolean    @default(false)
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id                   Int                  @id @default(autoincrement())
+  email                String               @unique
+  first_name           String?
+  password             String?
+  last_name            String?
+  phone_number         String?
+  avatar               String?
+  bio                  String?
+  role                 String               @default("owner") // 'tenant' or 'owner'
+  owned_suite          Suite?               @relation("owned_suite") // an owner must have one suite
+  owned_suite_id       Int?                 @unique // the id of the owned suite 
+  rented_suite         Suite?               @relation("rented_suite", fields: [rented_suite_id], references: [id]) // a tenant can have zero or one suite
+  rented_suite_id      Int?                 @unique // the id of the rented suite
+  businesses           Business[]
+  maintenance_requests MaintenanceRequest[]
+  comments             Comment[]
+  notifications        Notification[]
+  documents            UserDocument[]
+  onboarded            Boolean              @default(false)
+  verified             Boolean              @default(false)
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
 }
 
 model Suite {
-  id                Int                @id @default(autoincrement())
-  user_id           Int
-  user              User               @relation(fields: [user_id], references: [id])
-  suite_information SuiteInformation[]
-  space_name        String
-  space_address     String
-  space_size        Int
-  space_amenities   String
-  account_number    String
-  account_name      String
-  routing_number    String
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  id                   Int                  @id @default(autoincrement())
+  owner                User?                 @relation("owned_suite", fields: [owner_id], references: [id])
+  owner_id             Int?                  @unique // the owner of the suite
+  tenants              User[]               @relation("rented_suite") // the tenants of the suite
+  suite_informations   SuiteInformation[]
+  maintenance_requests MaintenanceRequest[]
+  space_name           String
+  space_address        String
+  space_size           Int
+  space_amenities      String
+  account_number       String
+  account_name         String
+  routing_number       String
+  created_at           DateTime             @default(now())
+  updated_at           DateTime             @updatedAt
 }
 
 model SuiteInformation {
@@ -55,8 +64,15 @@ model SuiteInformation {
   timing       String
   suite_id     Int
   suite        Suite    @relation(fields: [suite_id], references: [id])
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+}
+
+model UserDocument {
+  id      Int    @id @default(autoincrement())
+  url     String
+  user_id Int
+  user    User   @relation(fields: [user_id], references: [id])
 }
 
 model Business {
@@ -70,6 +86,59 @@ model Business {
   license                 String
   user_id                 Int
   user                    User     @relation(fields: [user_id], references: [id])
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+}
+
+model MaintenanceImages {
+  id                     Int                @id @default(autoincrement())
+  url                    String
+  maintenance_request_id Int
+  maintenance_request    MaintenanceRequest @relation(fields: [maintenance_request_id], references: [id])
+  created_at             DateTime           @default(now())
+  updated_at             DateTime           @updatedAt
+}
+
+model MaintenanceRequest {
+  id          Int                 @id @default(autoincrement())
+  user_id     Int
+  user        User                @relation(fields: [user_id], references: [id])
+  suite_id    Int
+  suite       Suite               @relation(fields: [suite_id], references: [id])
+  priority    String
+  description String
+  repair_date String
+  repair_time String
+  status      Status
+  images      MaintenanceImages[]
+  comments    Comment[]
+  created_at  DateTime            @default(now())
+  updated_at  DateTime            @updatedAt
+}
+
+model Comment {
+  id                     Int                @id @default(autoincrement())
+  text                   String
+  user_id                Int
+  user                   User               @relation(fields: [user_id], references: [id])
+  maintenance_request_id Int
+  maintenance_request    MaintenanceRequest @relation(fields: [maintenance_request_id], references: [id])
+  created_at             DateTime           @default(now())
+  updated_at             DateTime           @updatedAt
+}
+
+model Notification {
+  id         Int      @id @default(autoincrement())
+  text       String
+  user_id    Int
+  user       User     @relation(fields: [user_id], references: [id])
+  opened     Boolean
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
 }

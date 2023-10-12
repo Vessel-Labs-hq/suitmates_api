@@ -7,6 +7,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { UserService } from '../user/user.service';
 import { RegisterTenantDto } from './dto/register-tenant.dto';
 import { EmailService } from './../email/email.service';
+import { VerifyTokenDto } from './dto/verify-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -67,8 +68,20 @@ export class AuthService {
 
   }
 
+  async VerifyToken(payload: VerifyTokenDto){
+    try {
+      const result = this.jwtService.verify(payload.token);
+      return result;
+    } catch (error) {
+      ErrorHelper.BadRequestException('Invalid or Expired Token');
+    }
+  }
+  
+
   private async signUserToken(user: any) {
     const userInfo = {
+      name: ` ${user.first_name} ${user.last_name}`,
+      avatar: user.avatar,
       role: user.role,
       email: user.email,
       id: user.id,
@@ -93,5 +106,5 @@ export class AuthService {
     }
     return result;
   }
-  
+    
 }
