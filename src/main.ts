@@ -11,7 +11,12 @@ async function bootstrap() {
   const logger = new Logger('NestApplication');
 
   app.enableCors({
-    origin: ['http://localhost:3000', '*'],
+    origin: [
+      '*',
+      'https://tenant.mysuitemates.com',
+      'http://localhost:3000',
+      'https://suitmates-suit-owner.vercel.app',
+    ],
   });
 
   app.useGlobalPipes(new ValidationPipe());
