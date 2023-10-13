@@ -12,7 +12,7 @@ import { JWT_SECRET } from './base';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalGuards(new RolesGuard(app.get(Reflector)));
+  // app.useGlobalGuards(new RolesGuard(app.get(Reflector)));
   const logger = new Logger('NestApplication');
 
   app.enableCors({
