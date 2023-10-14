@@ -13,20 +13,25 @@ export const roundsOfHashing = 10;
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async register(userInfo: RegisterUserDto) {
+  async register(userInfo: RegisterUserDto, role:string) {
     const hashedPassword = await PasswordHelper.hashPassword(
       userInfo.password,
     );
 
     userInfo.password = hashedPassword;
-
     const data: Prisma.UserCreateArgs = {
       data: {
         email: userInfo.email,
         password: userInfo.password,
       },
     };
-    return await this.prisma.user.create(data);
+    const user = await this.prisma.user.create(data);
+    this.prisma.user.update({
+      where: { id: user.id },
+      data: {role: role},
+    });
+
+    return user;
   }
 
   async findAll() {
@@ -52,6 +57,9 @@ export class UserService {
   }
 
   async remove(id: number) {
-    return await this.prisma.user.delete({ where: { id } });
+    return await this.prisma.user.update({ 
+      where: { id },
+      data: { deleted: new Date() }, 
+    });
   }
 }

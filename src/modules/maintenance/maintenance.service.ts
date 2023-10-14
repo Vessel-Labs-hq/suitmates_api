@@ -1,10 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { CreateMaintenanceDto } from './dto/create-maintenance.dto';
 import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class MaintenanceService {
-  create(createMaintenanceDto: CreateMaintenanceDto) {
+  constructor(private userService: UserService){}
+  async createMaintenanceRequest(createMaintenanceDto: CreateMaintenanceDto,user: any) {
+    
+    const tenant = await this.userService.findOne(user.id);
+    return tenant
     return 'This action adds a new maintenance';
   }
 

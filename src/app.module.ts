@@ -8,7 +8,7 @@ import { JWT_SECRET } from './base';
 import { UserModule } from './modules/user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { envVarsSchema } from './helpers/env.validator';
-import { SuiteModule } from './modules/suite/suite.module';
+import { SpaceModule } from './modules/space/space.module';
 import { BusinessModule } from './modules/business/business.module';
 import { EmailModule } from './modules/email/email.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
@@ -28,7 +28,7 @@ import { MaintenanceModule } from './modules/maintenance/maintenance.module';
     global: true,
   },
     PrismaModule, 
-    AuthModule, UserModule, SuiteModule, BusinessModule, EmailModule, MaintenanceModule
+    AuthModule, UserModule, SpaceModule, BusinessModule, EmailModule, MaintenanceModule
   ],
   controllers: [AppController],
   providers: [AppService],
