@@ -1,6 +1,6 @@
-import {IsNotEmpty, IsString,IsNumber } from 'class-validator';
+import {IsNotEmpty, IsString,IsNumber, IsOptional } from 'class-validator';
 
-export class CreateSuiteDto {
+export class CreateSpaceDto {
 
   @IsNotEmpty()
   @IsString()
@@ -18,15 +18,15 @@ export class CreateSuiteDto {
   @IsString()
   space_amenities: string;
   
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   account_number:  string;
   
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   account_name:    string;
   
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   routing_number:  string;
 }

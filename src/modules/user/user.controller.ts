@@ -27,16 +27,6 @@ export class UserController {
     private readonly awsS3Service: AwsS3Service,
   ) {}
 
-  @Post()
-  async create(@Body() createUserDto: CreateUserDto) {
-    const user = await this.userService.register(createUserDto);
-
-    return HttpResponse.success({
-      data: user,
-      message: 'User created successfully',
-    });
-  }
-
   @Get()
   async findAll() {
     const users = await this.userService.findAll();

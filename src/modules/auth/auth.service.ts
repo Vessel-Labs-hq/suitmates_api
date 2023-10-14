@@ -42,7 +42,7 @@ export class AuthService {
         `User with email "${payload.email}" already exist`,
       );
     }
-    const newUser = await this.userService.register(payload);
+    const newUser = await this.userService.register(payload,'owner');
 
     return await this.signUserToken(newUser);
   }
@@ -53,19 +53,17 @@ export class AuthService {
     });
     if (emailExists) {
       ErrorHelper.ConflictException(
-        `User with email "${payload.email}" already exist`,
+        `User with email ${payload.email} already exist`,
       );
     }
     const password: string = this.generateRandomString(8)
     const data = {
       email: payload.email,
       password: password,
-      role: 'tenant',
     }
-    const newUser = await this.userService.register(data);
+    let newUser = await this.userService.register(data,'tenant');
     await this.emailService.sendUserWelcome(payload.email, password);
-    return newUser;
-
+    return
   }
 
   async VerifyToken(payload: VerifyTokenDto){

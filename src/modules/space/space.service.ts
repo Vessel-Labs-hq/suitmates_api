@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { CreateSuiteDto } from './dto/create-suite.dto';
-import { UpdateSuiteDto } from './dto/update-suite.dto';
+import { CreateSpaceDto } from './dto/create-space.dto';
+import { UpdateSpaceDto } from './dto/update-space.dto';
 import { PrismaService } from 'src/database/prisma.service';
-import { CreateSuiteInformationDto } from './dto/create-suite-information.dto';
+import { CreateSuitesDto } from './dto/create-suite.dto';
 import { ErrorHelper } from 'src/utils';
 
 @Injectable()
-export class SuiteService {
-  constructor(private readonly prisma: PrismaService) {}
+export class SpaceService {
+  constructor(private readonly prisma: PrismaService) { }
 
-  async createSuite(data: CreateSuiteDto, userId: number) {
-    return this.prisma.suite.create({
+  async createSpace(data: CreateSpaceDto, userId: number) {
+    return this.prisma.space.create({
       data: {
         ...data,
         owner: { connect: { id: userId } },
@@ -18,39 +18,48 @@ export class SuiteService {
     });
   }
 
-  async createSuiteInformation(
-    data: CreateSuiteInformationDto,
-    suite_id: number,
+  async createSuite(
+    data: CreateSuitesDto,
+    space_id: number,
   ) {
-    const suite = await this.findOne(suite_id);
-    if (suite == null || suite == undefined) {
-      ErrorHelper.BadRequestException(`No suite found`);
+    const space = await this.findOneSpace(space_id);
+    if (space == null || space == undefined) {
+      ErrorHelper.BadRequestException(`No space found`);
     }
-    return this.prisma.suiteInformation.create({
-      data: {
-        ...data,
-        suite: { connect: { id: suite.id } },
-      },
-    });
+    const savedSuites = [];
+
+    for (const suiteData of data.suites) {
+      const createdSuite = await this.prisma.suite.create({
+        data: {
+          ...suiteData,
+          space: { connect: { id: space.id } },
+        },
+      });
+      savedSuites.push(createdSuite);
+    }
+    return savedSuites;
   }
 
-  async findOne(id: number) {
-    return this.prisma.suite.findFirst({
+  async findOneSpace(id: number) {
+    return this.prisma.space.findFirst({
       where: {
         id,
       },
     });
   }
 
-  async update(id: number, updateSuiteDto: UpdateSuiteDto) {
-    return await this.prisma.suite.update({
+  async updateSpace(id: number, updateSpaceDto: UpdateSpaceDto) {
+    return await this.prisma.space.update({
       where: { id },
-      data: updateSuiteDto,
+      data: updateSpaceDto,
     });
   }
 
-  async remove(id: number) {
-    return await this.prisma.suite.delete({ where: { id } });
+  async removeSpace(id: number) {
+    return await this.prisma.space.update({
+      where: { id },
+      data: { deleted: new Date() },
+    });
   }
 
   // async retrieveSuiteMaintenanceRequest(userId: number) {
