@@ -61,7 +61,7 @@ export class AuthService {
       email: payload.email,
       password: password,
     }
-    let newUser = await this.userService.register(data,'tenant');
+    await this.userService.register(data,'tenant');
     await this.emailService.sendUserWelcome(payload.email, password);
     return
   }
