@@ -26,7 +26,7 @@ export class UserService {
       },
     };
     const user = await this.prisma.user.create(data);
-    this.prisma.user.update({
+    await this.prisma.user.update({
       where: { id: user.id },
       data: {role: role},
     });
@@ -39,7 +39,26 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    return await this.prisma.user.findUnique({ where: { id } });
+    return await this.prisma.user.findUnique(
+      { where: { id }, 
+      select: {
+        id: true,
+        email: true,
+        first_name: true,
+        password: false,
+        last_name: true,
+        phone_number: true,
+        avatar: true,
+        bio: true,
+        role: true,
+        suite:true,
+        onboarded: true,
+        verified: true,
+        created_at: true,
+        updated_at: true,
+        deleted: true
+ 
+    } });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
