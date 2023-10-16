@@ -55,11 +55,15 @@ export class UserController {
     //@ts-ignore
     @UploadedFile() avatar: Express.Multer.File,
   ) {
+    if (avatar) {
+     
     const avatarLink = await this.awsS3Service.uploadFile(
       avatar.originalname,
       avatar.buffer,
     );
+    
     updateUserDto.avatar = avatarLink;
+    }
     const user = await this.userService.update(+id, updateUserDto);
     return HttpResponse.success({
       data: user,
