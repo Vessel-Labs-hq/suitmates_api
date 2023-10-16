@@ -7,6 +7,7 @@ import {
   MinLength,
   IsBoolean
 } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreateUserDto {
   @IsEmail()
@@ -41,6 +42,7 @@ export class CreateUserDto {
   avatar: string;
 
   @IsOptional()
+  @Transform(({ value }) => value.toLowerCase() === 'true')
   @IsBoolean()
   onboarded: boolean;
 
