@@ -5,6 +5,7 @@ import {
   IsString,
   MaxLength,
   MinLength,
+  IsBoolean
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -35,13 +36,21 @@ export class CreateUserDto {
   @MaxLength(20)
   phone_number: string;
 
+  @IsOptional()
+  @IsString()
+  avatar: string;
+
+  @IsOptional()
+  @IsBoolean()
+  onboarded: boolean;
+
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
   bio: string;
 
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  @IsOptional()
   role: string; // 'tenant' or 'owner'
 }
