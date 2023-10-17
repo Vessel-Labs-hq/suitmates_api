@@ -27,7 +27,7 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      ErrorHelper.UnauthorizedException('Invalid password');
+      ErrorHelper.BadRequestException('Invalid password');
     }
     return await this.signUserToken(user);
   }
