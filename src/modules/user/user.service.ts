@@ -6,17 +6,20 @@ import * as bcrypt from 'bcrypt';
 import { DateHelper, ErrorHelper, PasswordHelper, Utils } from 'src/utils';
 import { RegisterUserDto } from '../auth/dto/register-user.dto';
 import { Prisma } from '@prisma/client';
+import { StripePaymentService } from '../stripe-payment/stripe-payment.service';
+import { AttachCardDto } from './dto/attach-card.dto';
 
 export const roundsOfHashing = 10;
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private stripePaymentService: StripePaymentService,
+  ) {}
 
-  async register(userInfo: RegisterUserDto, role:string) {
-    const hashedPassword = await PasswordHelper.hashPassword(
-      userInfo.password,
-    );
+  async register(userInfo: RegisterUserDto, role: string) {
+    const hashedPassword = await PasswordHelper.hashPassword(userInfo.password);
 
     userInfo.password = hashedPassword;
     const data: Prisma.UserCreateArgs = {
@@ -28,7 +31,7 @@ export class UserService {
     const user = await this.prisma.user.create(data);
     await this.prisma.user.update({
       where: { id: user.id },
-      data: {role: role},
+      data: { role: role },
     });
 
     return user;
@@ -39,8 +42,8 @@ export class UserService {
   }
 
   async findOne(id: number) {
-    return await this.prisma.user.findUnique(
-      { where: { id }, 
+    return await this.prisma.user.findUnique({
+      where: { id },
       select: {
         id: true,
         email: true,
@@ -51,14 +54,18 @@ export class UserService {
         avatar: true,
         bio: true,
         role: true,
-        suite:true,
+        suite: true,
         onboarded: true,
         verified: true,
+        stripe_customer_id: true,
+        stripe_payment_method_id: true,
+        card_last_digit: true,
+        card_name: true,
         created_at: true,
         updated_at: true,
-        deleted: true
- 
-    } });
+        deleted: true,
+      },
+    });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -76,9 +83,26 @@ export class UserService {
   }
 
   async remove(id: number) {
-    return await this.prisma.user.update({ 
+    return await this.prisma.user.update({
       where: { id },
-      data: { deleted: new Date() }, 
+      data: { deleted: new Date() },
+    });
+  }
+
+  async attachCard(user: any, attachCardDto: AttachCardDto) {
+    const { customer, paymentMethod } =
+      await this.stripePaymentService.createCustomerAndPaymentMethod(
+        user.email,
+        attachCardDto.payment_method_id,
+      );
+    return await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        stripe_customer_id: customer.id,
+        stripe_payment_method_id: paymentMethod.id,
+        card_last_digit: attachCardDto.card_last_digit,
+        card_name: attachCardDto.card_name,
+      },
     });
   }
 }

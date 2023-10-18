@@ -16,3 +16,8 @@ export const Google_Private_Key= configService.get("Google_Private_Key");
 export const AWS_ACCESS_KEY_ID= configService.get("AWS_ACCESS_KEY_ID");
 export const AWS_SECRET_ACCESS_KEY= configService.get("AWS_SECRET_ACCESS_KEY");
 export const AWS_REGION= configService.get("AWS_REGION");
+
+
+export const STRIPE_SECRET_KEY = configService.get("STRIPE_SECRET_KEY");
+export const STRIPE_CURRENCY = configService.get("STRIPE_CURRENCY");
+export const STRIPE_WEBHOOK_SECRET = configService.get("STRIPE_WEBHOOK_SECRET");

@@ -18,6 +18,8 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AwsS3Service } from 'src/aws/aws-s3.service';
 import { ValidatedImage } from 'src/decorators';
+import { IUser, User } from 'src/decorators';
+import { AttachCardDto } from './dto/attach-card.dto';
 
 @UseGuards(AuthGuard)
 @Controller('user')
@@ -77,6 +79,15 @@ export class UserController {
     return HttpResponse.success({
       data: user,
       message: 'User created successfully',
+    });
+  }
+
+  @Post('/attach-card')
+  async attachCard(@Body()  attachCardDto: AttachCardDto,@User() user: IUser){
+    const response = await this.userService.attachCard(user,attachCardDto);
+    return HttpResponse.success({
+      data: response,
+      message: 'Card attached successfully',
     });
   }
 }

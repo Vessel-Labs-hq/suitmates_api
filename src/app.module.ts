@@ -12,23 +12,31 @@ import { SpaceModule } from './modules/space/space.module';
 import { BusinessModule } from './modules/business/business.module';
 import { EmailModule } from './modules/email/email.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
+import { StripePaymentModule } from './modules/stripe-payment/stripe-payment.module';
 
 
 @Module({
-  imports: [ConfigModule.forRoot({
-    isGlobal: true,
-    cache: true,
-    validationSchema: envVarsSchema,
-  }),
-  {
-    ...JwtModule.register({
-      secret: JWT_SECRET,
-      signOptions: { expiresIn: "24h" },
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      cache: true,
+      validationSchema: envVarsSchema,
     }),
-    global: true,
-  },
-    PrismaModule, 
-    AuthModule, UserModule, SpaceModule, BusinessModule, EmailModule, MaintenanceModule
+    {
+      ...JwtModule.register({
+        secret: JWT_SECRET,
+        signOptions: { expiresIn: '24h' },
+      }),
+      global: true,
+    },
+    PrismaModule,
+    AuthModule,
+    UserModule,
+    SpaceModule,
+    BusinessModule,
+    EmailModule,
+    MaintenanceModule,
+    StripePaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
