@@ -20,6 +20,7 @@ import { IUser, User } from 'src/decorators';
 import { HttpResponse } from 'src/utils/http-response.utils';
 import { AwsS3Service } from 'src/aws/aws-s3.service';
 import { UpdateDateStatusRequestDto } from './dto/update-date-status.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 
 @UseGuards(AuthGuard, RolesGuard)
 @Controller('maintenance')
@@ -70,5 +71,17 @@ export class MaintenanceController {
     @Body() updateDto: UpdateDateStatusRequestDto,
   ) {
     return this.maintenanceService.updateDateOrStatusRequest(id, updateDto);
+  }
+
+  @Post(':id/comments')
+  async addCommentToMaintenanceRequest(
+    @Param('id') id: number,
+    @Body() createCommentDto: CreateCommentDto,
+  ) {
+    return this.maintenanceService.addCommentToMaintenanceRequest(
+      id,
+      createCommentDto,
+      1, //change
+    );
   }
 }

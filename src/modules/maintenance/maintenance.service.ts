@@ -7,6 +7,7 @@ import { PrismaService } from 'src/database/prisma.service';
 import { ErrorHelper } from 'src/utils';
 import { MaintenanceRequest } from '@prisma/client';
 import { UpdateDateStatusRequestDto } from './dto/update-date-status.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 
 @Injectable()
 export class MaintenanceService {
@@ -157,6 +158,33 @@ export class MaintenanceService {
       where: { id: maintenanceRequest.id },
       data: updateDto,
     });
+  }
+
+  async addCommentToMaintenanceRequest(
+    id: number,
+    createCommentDto: CreateCommentDto,
+    userId?: number,
+  ): Promise<any> {
+    // Fetch the maintenance request by ID
+    const maintenanceRequest = await this.findMaintenanceRequestById(id);
+
+    // Validate User
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+    });
+
+    if (!user) ErrorHelper.BadRequestException('User not found');
+
+    // Create a new comment
+    const comment = this.prisma.comment.create({
+      data: {
+        text: createCommentDto.text,
+        user_id: user.id,
+        maintenance_request_id: maintenanceRequest.id,
+      },
+    });
+
+    return comment;
   }
 
   private async findMaintenanceRequestById(
