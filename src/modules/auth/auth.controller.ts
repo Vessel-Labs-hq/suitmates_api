@@ -22,16 +22,15 @@ export class AuthController {
 
   @Post('register-tenant')
   async registerTenant(@Body() registerTenantDto: RegisterTenantDto) {
-    
     await this.authService.registerTenant(registerTenantDto);
     return HttpResponse.success({
-      data: "",
+      data: '',
       message: 'Tenant invited successfully',
     });
   }
 
   @Post('verify-token')
-  verifyToken(@Body() verifyTokenDto: VerifyTokenDto){
+  verifyToken(@Body() verifyTokenDto: VerifyTokenDto) {
     return this.authService.VerifyToken(verifyTokenDto);
   }
 }
