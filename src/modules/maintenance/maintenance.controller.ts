@@ -5,13 +5,12 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
   UseGuards,
   UploadedFiles,
 } from '@nestjs/common';
 import { MaintenanceService } from './maintenance.service';
 import { CreateMaintenanceDto } from './dto/create-maintenance.dto';
-import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
+// import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -20,6 +19,7 @@ import { ValidatedImages } from 'src/decorators';
 import { IUser, User } from 'src/decorators';
 import { HttpResponse } from 'src/utils/http-response.utils';
 import { AwsS3Service } from 'src/aws/aws-s3.service';
+import { UpdateDateStatusRequestDto } from './dto/update-date-status.dto';
 
 @UseGuards(AuthGuard, RolesGuard)
 @Controller('maintenance')
@@ -59,31 +59,16 @@ export class MaintenanceController {
     });
   }
 
-  @Get()
-  findAll() {
-    return this.maintenanceService.findAll();
-  }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.maintenanceService.findOne(+id);
-  // }
-
   @Get(':userId')
   getOwnerMaintenanceBoard(@Param('userId') userId: string) {
     return this.maintenanceService.getMaintenanceRequestsByUser(+userId);
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateMaintenanceDto: UpdateMaintenanceDto,
+  async updateMaintenanceRequest(
+    @Param('id') id: number,
+    @Body() updateDto: UpdateDateStatusRequestDto,
   ) {
-    return this.maintenanceService.update(+id, updateMaintenanceDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.maintenanceService.remove(+id);
+    return this.maintenanceService.updateDateOrStatusRequest(id, updateDto);
   }
 }

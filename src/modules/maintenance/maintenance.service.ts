@@ -5,6 +5,8 @@ import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
 import { UserService } from '../user/user.service';
 import { PrismaService } from 'src/database/prisma.service';
 import { ErrorHelper } from 'src/utils';
+import { MaintenanceRequest } from '@prisma/client';
+import { UpdateDateStatusRequestDto } from './dto/update-date-status.dto';
 
 @Injectable()
 export class MaintenanceService {
@@ -39,9 +41,9 @@ export class MaintenanceService {
     });
   }
 
-  async getMaintenanceRequestsByUser(userId: number): Promise<any> {
+  async getMaintenanceRequestsByUser(userId, options?) {
     try {
-      // step 0: Validate User
+      // Step 0: Validate User
       const user = await this.prisma.user.findUniqueOrThrow({
         where: { id: userId },
       });
@@ -53,7 +55,7 @@ export class MaintenanceService {
         where: { owner_id: userId },
       });
 
-      const maintenanceRequests: any[] = [];
+      let maintenanceRequests = [];
       let totalMaintenanceRequests = 0;
       let pendingMaintenanceRequests = 0;
 
@@ -78,10 +80,52 @@ export class MaintenanceService {
         pendingMaintenanceRequests += pendingRequests.length;
       }
 
-      // Step 5: Return the result
+      // Step 5: Sort, filter, and paginate the result
+      const {
+        filterStatus,
+        filterDateField,
+        filterDateFrom,
+        filterDateTo,
+        page,
+        pageSize,
+      } = options;
+
+      // Filter the maintenance requests by status
+      if (filterStatus) {
+        maintenanceRequests = maintenanceRequests.filter(
+          (request) => request.status === filterStatus,
+        );
+      }
+
+      // Filter the maintenance requests by date range
+      if (filterDateField && filterDateFrom && filterDateTo) {
+        maintenanceRequests = maintenanceRequests.filter((request) => {
+          const requestDate = new Date(request[filterDateField]);
+          return (
+            requestDate >= new Date(filterDateFrom) &&
+            requestDate <= new Date(filterDateTo)
+          );
+        });
+      }
+
+      // Sort the maintenance requests by date (newest to oldest)
+      maintenanceRequests.sort((a, b) => {
+        const dateA: any = new Date(a[filterDateField]);
+        const dateB: any = new Date(b[filterDateField]);
+        return dateB - dateA;
+      });
+
+      // Paginate the result
+      const startIndex = (page - 1) * pageSize;
+      const endIndex = startIndex + pageSize;
+      const paginatedMaintenanceRequests = maintenanceRequests.slice(
+        startIndex,
+        endIndex,
+      );
+
       return {
         maintenanceRequests,
-        totalMaintenanceRequests,
+        totalMaintenanceRequests: maintenanceRequests.length,
         pendingMaintenanceRequests,
       };
     } catch (error) {
@@ -90,19 +134,40 @@ export class MaintenanceService {
     }
   }
 
-  findAll() {
-    return `This action returns all maintenance`;
+  async updateDateOrStatusRequest(
+    id: number,
+    updateDto: UpdateDateStatusRequestDto,
+  ): Promise<MaintenanceRequest> {
+    // Fetch the maintenance request by ID
+    const maintenanceRequest = await this.findMaintenanceRequestById(id);
+
+    // Update the fields if they are provided in the DTO
+    if (updateDto.repair_date) {
+      maintenanceRequest.repair_date = updateDto.repair_date;
+    }
+    if (updateDto.repair_time) {
+      maintenanceRequest.repair_time = updateDto.repair_time;
+    }
+    if (updateDto.status) {
+      maintenanceRequest.status = updateDto.status;
+    }
+
+    // Save the updated maintenance request
+    return await this.prisma.maintenanceRequest.update({
+      where: { id: maintenanceRequest.id },
+      data: updateDto,
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} maintenance`;
-  }
-
-  update(id: number, _updateMaintenanceDto: UpdateMaintenanceDto) {
-    return `This action updates a #${id} maintenance`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} maintenance`;
+  private async findMaintenanceRequestById(
+    id: number,
+  ): Promise<MaintenanceRequest> {
+    const maintenanceRequest = await this.prisma.maintenanceRequest.findUnique({
+      where: { id },
+    });
+    if (!maintenanceRequest) {
+      throw new ErrorHelper.NotFoundException('Maintenance request not found');
+    }
+    return maintenanceRequest;
   }
 }
