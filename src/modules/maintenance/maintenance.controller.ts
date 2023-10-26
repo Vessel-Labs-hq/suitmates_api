@@ -83,7 +83,7 @@ export class MaintenanceController {
     return this.maintenanceService.updateDateOrStatusRequest(id, updateDto);
   }
 
-  @Get()
+  @Get('sorted')
   async getSortedMaintenanceRequests(
     @Query() query: SortMaintenanceDto,
   ) {
