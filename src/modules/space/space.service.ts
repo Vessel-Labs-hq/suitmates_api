@@ -7,7 +7,7 @@ import { ErrorHelper } from 'src/utils';
 
 @Injectable()
 export class SpaceService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   async createSpace(data: CreateSpaceDto, userId: number) {
     return this.prisma.space.create({
@@ -18,10 +18,7 @@ export class SpaceService {
     });
   }
 
-  async createSuite(
-    data: CreateSuitesDto,
-    space_id: number,
-  ) {
+  async createSuite(data: CreateSuitesDto, space_id: number) {
     const space = await this.findOneSpace(space_id);
     if (space == null || space == undefined) {
       ErrorHelper.BadRequestException(`No space found`);

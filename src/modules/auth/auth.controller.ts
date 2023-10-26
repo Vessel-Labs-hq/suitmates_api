@@ -26,13 +26,13 @@ export class AuthController {
     
     await this.authService.registerTenant(registerTenantDto,user.id);
     return HttpResponse.success({
-      data: "",
+      data: '',
       message: 'Tenant invited successfully',
     });
   }
 
   @Post('verify-token')
-  verifyToken(@Body() verifyTokenDto: VerifyTokenDto){
+  verifyToken(@Body() verifyTokenDto: VerifyTokenDto) {
     return this.authService.VerifyToken(verifyTokenDto);
   }
 }
