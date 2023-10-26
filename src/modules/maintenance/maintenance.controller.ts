@@ -61,6 +61,15 @@ export class MaintenanceController {
     });
   }
 
+  @Get()
+  @Roles(Role.Tenant)
+  async findAll(@User() user: IUser) {
+    return HttpResponse.success({
+      data: await this.maintenanceService.findAllTenantMaintenanceRequest(user),
+      message: 'Maintenance request sorted successfully',
+    });
+  }
+
   @Get(':userId')
   getOwnerMaintenanceBoard(@Param('userId') userId: string) {
     return this.maintenanceService.getMaintenanceRequestsByUser(+userId);
@@ -72,18 +81,6 @@ export class MaintenanceController {
     @Body() updateDto: UpdateDateStatusRequestDto,
   ) {
     return this.maintenanceService.updateDateOrStatusRequest(id, updateDto);
-  }
-
-  @Get()
-  async getSortedMaintenanceRequests(
-    @Query() query: SortMaintenanceDto,
-  ) {
-    const { status, created_at } = query;
-    const data = await this.maintenanceService.getSortedMaintenanceRequests(status, created_at);
-    return HttpResponse.success({
-      data: data,
-      message: 'Maintenance request sorted successfully',
-    });
   }
 
   @Get()
