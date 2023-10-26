@@ -40,11 +40,15 @@ export class SpaceService {
     return savedSuites;
   }
 
-  async findOneSpace(id: number) {
+  async findOneSpace(id: number,userId?: number) {
+    const where: { id: number, owner_id?: number } = { id };
+
+    if (userId !== undefined) {
+      where.owner_id = userId;
+    }
+  
     return this.prisma.space.findFirst({
-      where: {
-        id,
-      },
+      where,
     });
   }
 

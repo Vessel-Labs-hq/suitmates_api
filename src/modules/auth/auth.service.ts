@@ -47,7 +47,7 @@ export class AuthService {
     return await this.signUserToken(newUser);
   }
 
-  async registerTenant(payload: RegisterTenantDto){
+  async registerTenant(payload: RegisterTenantDto,owner_id: number){
     const emailExists = await this.prisma.user.findUnique({
       where: { email: payload.email },
     });
@@ -60,6 +60,7 @@ export class AuthService {
     const data = {
       email: payload.email,
       password: password,
+      invited_by: owner_id
     }
     await this.userService.register(data,'tenant');
     await this.emailService.sendUserWelcome(payload.email, password);

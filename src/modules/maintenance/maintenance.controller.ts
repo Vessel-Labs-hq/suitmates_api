@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFiles } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, UploadedFiles, Query } from '@nestjs/common';
 import { MaintenanceService } from './maintenance.service';
 import { CreateMaintenanceDto } from './dto/create-maintenance.dto';
 import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
@@ -10,6 +10,7 @@ import { ValidatedImages } from 'src/decorators';
 import { IUser, User } from 'src/decorators';
 import { HttpResponse } from 'src/utils/http-response.utils';
 import { AwsS3Service } from 'src/aws/aws-s3.service';
+import { SortMaintenanceDto } from './dto/sort-maintenace.dto';
 
 
 @UseGuards(AuthGuard,RolesGuard)
@@ -37,8 +38,12 @@ export class MaintenanceController {
   }
 
   @Get()
-  findAll() {
-    return this.maintenanceService.findAll();
+  @Roles(Role.Tenant)
+  async findAll(@User() user: IUser) {
+    return HttpResponse.success({
+      data: await this.maintenanceService.findAllTenantMaintenanceRequest(user),
+      message: 'Maintenance request sorted successfully',
+    });
   }
 
   @Get(':id')
@@ -49,6 +54,18 @@ export class MaintenanceController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateMaintenanceDto: UpdateMaintenanceDto) {
     return this.maintenanceService.update(+id, updateMaintenanceDto);
+  }
+
+  @Get()
+  async getSortedMaintenanceRequests(
+    @Query() query: SortMaintenanceDto,
+  ) {
+    const { status, created_at } = query;
+    const data = await this.maintenanceService.getSortedMaintenanceRequests(status, created_at);
+    return HttpResponse.success({
+      data: data,
+      message: 'Maintenance request sorted successfully',
+    });
   }
 
   @Delete(':id')

@@ -13,15 +13,19 @@ import {
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { HttpResponse } from 'src/utils';
+import { ErrorHelper, HttpResponse } from 'src/utils';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AwsS3Service } from 'src/aws/aws-s3.service';
 import { ValidatedImage } from 'src/decorators';
 import { IUser, User } from 'src/decorators';
 import { AttachCardDto } from './dto/attach-card.dto';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/decorators/roles.decorator';
+import { Role } from 'src/enums/role.enum';
+import { AttachTenantDto } from './dto/attach-tenant.dto';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard,RolesGuard)
 @Controller('user')
 export class UserController {
   constructor(
@@ -40,11 +44,14 @@ export class UserController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const user = await this.userService.findOne(+id);
+  async findOne(@Param('id') id: string,@User() user: IUser) {
+    if(user.id !== +id) {
+        ErrorHelper.BadRequestException(`Bad request`);
+    }
+    const userData = await this.userService.findOne(+id);
 
     return HttpResponse.success({
-      data: user,
+      data: userData,
       message: 'User record retrieved successfully',
     });
   }
@@ -88,6 +95,16 @@ export class UserController {
     return HttpResponse.success({
       data: response,
       message: 'Card attached successfully',
+    });
+  }
+
+  @Post('/attach-tenant')
+  @Roles(Role.Owner)
+  async attachTenant(@Body() attachTenantDto: AttachTenantDto,@User() user: IUser){
+    const response = await this.userService.attachTenant(attachTenantDto,user);
+    return HttpResponse.success({
+      data: response,
+      message: 'Tenant attached successfully',
     });
   }
 }

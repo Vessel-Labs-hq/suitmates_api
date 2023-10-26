@@ -34,8 +34,27 @@ export class MaintenanceService {
     })
   }
 
-  findAll() {
-    return `This action returns all maintenance`;
+  async getSortedMaintenanceRequests(created_at: string, status: any){
+    const maintenanceRequests = await this.prisma.maintenanceRequest.findMany({
+      where: {
+        ...(status && { status }),
+        ...(created_at && { created_at: new Date(created_at) }),
+      },
+    });
+
+    return maintenanceRequests;
+  }
+
+  async findAllTenantMaintenanceRequest(user: any) {
+    return await this.prisma.maintenanceRequest.findMany({
+      where: {user_id: user.id},
+      include: {
+        user: true,
+        suite: true,
+        images: true,
+        comments: true
+      }
+    });
   }
 
   findOne(id: number) {

@@ -25,6 +25,7 @@ model User {
   stripe_payment_method_id String?
   card_last_digit          String?
   card_name                String?
+  invited_by               Int?
   role                     String               @default("owner") // 'tenant' or 'owner'
   space                    Space? // an owner must have one space
   suite                    Suite? // a tenant can have a suite
@@ -113,8 +114,8 @@ model MaintenanceRequest {
   suite       Suite               @relation(fields: [suite_id], references: [id])
   priority    String
   description String
-  repair_date String
-  repair_time String
+  repair_date String?
+  repair_time String?
   status      Status              @default(IN_PROGRESS)
   images      MaintenanceImages[]
   comments    Comment[]

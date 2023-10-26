@@ -5,6 +5,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { RegisterTenantDto } from './dto/register-tenant.dto';
 import { VerifyTokenDto } from './dto/verify-token.dto';
 import { HttpResponse } from 'src/utils/http-response.utils';
+import { IUser, User } from 'src/decorators';
 
 @Controller('auth')
 export class AuthController {
@@ -21,9 +22,9 @@ export class AuthController {
   }
 
   @Post('register-tenant')
-  async registerTenant(@Body() registerTenantDto: RegisterTenantDto) {
+  async registerTenant(@Body() registerTenantDto: RegisterTenantDto,@User() user: IUser) {
     
-    await this.authService.registerTenant(registerTenantDto);
+    await this.authService.registerTenant(registerTenantDto,user.id);
     return HttpResponse.success({
       data: "",
       message: 'Tenant invited successfully',
