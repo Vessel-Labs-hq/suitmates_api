@@ -55,7 +55,7 @@ export class MaintenanceService {
       const userSuites = await this.prisma.space.findMany({
         where: { owner_id: userId },
       });
-
+      console.log(userSuites,userId);
       let maintenanceRequests = [];
       let totalMaintenanceRequests = 0;
       let pendingMaintenanceRequests = 0;
@@ -67,7 +67,7 @@ export class MaintenanceService {
           await this.prisma.maintenanceRequest.findMany({
             where: { suite_id: suite.id },
           });
-
+console.log(suiteMaintenanceRequests,suite)
         // Step 4: Filter maintenance requests to find the pending ones
         const pendingRequests = suiteMaintenanceRequests.filter(
           (request) => request.status === 'PENDING',

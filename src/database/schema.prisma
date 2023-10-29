@@ -116,7 +116,7 @@ model MaintenanceRequest {
   description String
   repair_date String?
   repair_time String?
-  status      Status              @default(IN_PROGRESS)
+  status      Status              @default(PENDING)
   images      MaintenanceImages[]
   comments    Comment[]
   created_at  DateTime            @default(now())

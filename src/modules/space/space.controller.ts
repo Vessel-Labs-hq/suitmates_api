@@ -62,10 +62,10 @@ export class SpaceController {
     });
   }
 
-  @Patch(':id')
+  @Patch()
   @Roles(Role.Owner)
-  async update(@Param('id') id: string, @Body() updateSpaceDto: UpdateSpaceDto) {
-    const suite = await this.spaceService.updateSpace(+id, updateSpaceDto);
+  async update(@Body() updateSpaceDto: UpdateSpaceDto, @User() user: IUser) {
+    const suite = await this.spaceService.updateSpace(+user.id, updateSpaceDto);
     if(!suite){
       return HttpResponse.badRequest({
         data: "null",

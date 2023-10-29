@@ -49,9 +49,19 @@ export class SpaceService {
     });
   }
 
-  async updateSpace(id: number, updateSpaceDto: UpdateSpaceDto) {
+  async updateSpace(userId: number, updateSpaceDto: UpdateSpaceDto) {
+   
+   const user = await this.prisma.user.findUnique({
+    where:{
+    id: userId,
+   },
+   select: {
+    space: true
+   }
+  });
+
     return await this.prisma.space.update({
-      where: { id },
+      where: { id: user.space.id },
       data: updateSpaceDto,
     });
   }

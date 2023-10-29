@@ -6,7 +6,7 @@ import {
   Patch,
   Param,
   UseGuards,
-  UploadedFiles, Query,
+  UploadedFiles, Query, UseInterceptors,
 } from '@nestjs/common';
 import { MaintenanceService } from './maintenance.service';
 import { CreateMaintenanceDto } from './dto/create-maintenance.dto';
@@ -22,8 +22,9 @@ import { AwsS3Service } from 'src/aws/aws-s3.service';
 import { UpdateDateStatusRequestDto } from './dto/update-date-status.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { SortMaintenanceDto } from './dto/sort-maintenace.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
-@UseGuards(AuthGuard, RolesGuard)
+@UseGuards(AuthGuard)
 @Controller('maintenance')
 export class MaintenanceController {
   constructor(
@@ -35,10 +36,11 @@ export class MaintenanceController {
   @ValidatedImages('images')
   @Roles(Role.Tenant)
   async create(
-    @Body() createMaintenanceDto: CreateMaintenanceDto,
     @UploadedFiles() images: Express.Multer.File[],
     @User() user: IUser,
+    @Body() createMaintenanceDto: CreateMaintenanceDto,
   ) {
+
     const result = await this.maintenanceService.createMaintenanceRequest(
       createMaintenanceDto,
       user,
@@ -70,9 +72,18 @@ export class MaintenanceController {
     });
   }
 
-  @Get(':userId')
-  getOwnerMaintenanceBoard(@Param('userId') userId: string) {
-    return this.maintenanceService.getMaintenanceRequestsByUser(+userId);
+  @Get('owner/:filterStatus/:filterDateField/:filterDateFrom/:filterDateTo')
+  async getOwnerMaintenanceBoard(
+    @User() user: IUser,
+    @Param('filterStatus') filterStatus: string,
+    @Param('filterDateField') filterDateField: string,
+    @Param('filterDateFrom') filterDateFrom: string,
+    @Param('filterDateTo') filterDateTo: string
+    ) {
+    return HttpResponse.success({
+      data: await this.maintenanceService.getMaintenanceRequestsByUser(+user.id,{filterStatus,filterDateField,filterDateFrom,filterDateTo}),
+      message: 'Maintenance request sorted successfully',
+    });
   }
 
   @Patch(':id')

@@ -56,11 +56,11 @@ export class UserController {
     });
   }
 
-  @Patch(':id')
+  @Patch()
   @ValidatedImage('avatar')
   async update(
-    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @User() user: IUser,
     //@ts-ignore
     @UploadedFile() avatar: Express.Multer.File,
   ) {
@@ -73,9 +73,9 @@ export class UserController {
     
     updateUserDto.avatar = avatarLink;
     }
-    const user = await this.userService.update(+id, updateUserDto);
+    const data = await this.userService.update(+user.id, updateUserDto);
     return HttpResponse.success({
-      data: user,
+      data: data,
       message: 'User updated successfully',
     });
   }
