@@ -19,11 +19,18 @@ export class MaintenanceService {
     createMaintenanceDto: CreateMaintenanceDto,
     user: any,
   ) {
-    const tenant = await this.userService.findOne(user.id);
+    const tenant = await this.prisma.user.findUnique({
+      where: {id:user.id},
+      include: {suite: true}
+    });
+
+    if(!tenant.suite){
+      ErrorHelper.NotFoundException("User is not assigned to a suite")
+    }
     const maintenanceRequest = await this.prisma.maintenanceRequest.create({
       data: {
         user: { connect: { id: tenant.id } },
-        suite: { connect: { id: tenant?.suite?.id } },
+        suite: { connect: { id: tenant.suite.id } },
         priority: createMaintenanceDto.priority,
         description: createMaintenanceDto.description,
         repair_date: null,

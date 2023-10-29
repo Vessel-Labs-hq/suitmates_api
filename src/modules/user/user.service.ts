@@ -158,4 +158,12 @@ export class UserService {
       },
     });
   }
+
+  async getTenants(userId: number){
+    return this.prisma.user.findMany({
+      where: {
+        invited_by: userId
+      }
+    })
+  }
 }

@@ -107,4 +107,14 @@ export class UserController {
       message: 'Tenant attached successfully',
     });
   }
+
+  @Get('/tenants')
+  @Roles(Role.Owner)
+  async getTenants (@User() user: IUser){
+    const response = await this.userService.getTenants(+user.id);
+    return HttpResponse.success({
+      data: response,
+      message: 'Tenant records retrieved successfully',
+    });
+  }
 }
