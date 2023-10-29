@@ -33,6 +33,16 @@ export class UserController {
     private readonly awsS3Service: AwsS3Service,
   ) {}
 
+  @Get('/tenants')
+  @Roles(Role.Owner)
+  async getTenants(@User() user: IUser){
+    const response = await this.userService.getTenants(+user.id);
+    return HttpResponse.success({
+      data: response,
+      message: 'Tenant records retrieved successfully',
+    });
+  }
+  
   @Get()
   async findAll() {
     const users = await this.userService.findAll();
@@ -105,16 +115,6 @@ export class UserController {
     return HttpResponse.success({
       data: response,
       message: 'Tenant attached successfully',
-    });
-  }
-
-  @Get('/tenants')
-  @Roles(Role.Owner)
-  async getTenants (@User() user: IUser){
-    const response = await this.userService.getTenants(+user.id);
-    return HttpResponse.success({
-      data: response,
-      message: 'Tenant records retrieved successfully',
     });
   }
 }

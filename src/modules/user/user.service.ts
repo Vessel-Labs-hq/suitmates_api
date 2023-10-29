@@ -163,6 +163,10 @@ export class UserService {
     return this.prisma.user.findMany({
       where: {
         invited_by: userId
+      },
+      include: {
+        suite: true,
+        businesses: true
       }
     })
   }

@@ -81,7 +81,7 @@ export class MaintenanceController {
     @Param('filterDateTo') filterDateTo: string
     ) {
     return HttpResponse.success({
-      data: await this.maintenanceService.getMaintenanceRequestsByUser(+user.id,{filterStatus,filterDateField,filterDateFrom,filterDateTo}),
+      data: await this.maintenanceService.getMaintenanceRequestsByUser(+user.id,{filterStatus:filterStatus ,filterDateField,filterDateFrom,filterDateTo}),
       message: 'Maintenance request sorted successfully',
     });
   }
