@@ -63,6 +63,7 @@ export class UserService {
             suite: true,
           },
         },
+        businesses: true,
         onboarded: true,
         verified: true,
         stripe_customer_id: true,

@@ -58,7 +58,7 @@ export class UserController {
     if(user.id !== +id) {
         ErrorHelper.BadRequestException(`Bad request`);
     }
-    const userData = await this.userService.findOne(+id);
+    const userData = await this.userService.findOne(+user.id);
 
     return HttpResponse.success({
       data: userData,

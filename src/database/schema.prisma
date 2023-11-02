@@ -89,7 +89,7 @@ model Business {
   occupation              String
   hours_of_business_open  String
   hours_of_business_close String
-  website                 String
+  website                 String?
   license                 String
   user_id                 Int
   user                    User     @relation(fields: [user_id], references: [id])
@@ -113,6 +113,7 @@ model MaintenanceRequest {
   suite_id    Int
   suite       Suite               @relation(fields: [suite_id], references: [id])
   priority    String
+  category  String?
   description String
   repair_date String?
   repair_time String?
