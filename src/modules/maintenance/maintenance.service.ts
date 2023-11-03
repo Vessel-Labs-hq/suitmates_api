@@ -59,15 +59,16 @@ export class MaintenanceService {
       if (!user) ErrorHelper.BadRequestException('User not found');
 
       // Step 1: Retrieve all suites by a user
-      const userSuites = await this.prisma.space.findMany({
+      const userSuites = await this.prisma.space.findUniqueOrThrow({
         where: { owner_id: userId },
+        include: {suite: true}
       });
       let maintenanceRequests = [];
       let totalMaintenanceRequests = 0;
       let pendingMaintenanceRequests = 0;
 
       // Step 2: Iterate through the retrieved suites
-      for (const suite of userSuites) {
+      for (const suite of userSuites.suite) {
         // Step 3: For each suite, retrieve its associated maintenance requests
         const suiteMaintenanceRequests =
           await this.prisma.maintenanceRequest.findMany({
@@ -88,47 +89,47 @@ export class MaintenanceService {
       }
 
       // Step 5: Sort, filter, and paginate the result
-      const {
-        filterStatus,
-        filterDateField,
-        filterDateFrom,
-        filterDateTo,
-        page,
-        pageSize,
-      } = options;
+      // const {
+      //   filterStatus,
+        // filterDateField,
+        // filterDateFrom,
+        // filterDateTo,
+        // page,
+        // pageSize,
+      // } = options;
 
       // Filter the maintenance requests by status
-      if (filterStatus) {
-        maintenanceRequests = maintenanceRequests.filter(
-          (request) => request.status === filterStatus,
-        );
-      }
+      // if (filterStatus) {
+      //   maintenanceRequests = maintenanceRequests.filter(
+      //     (request) => request.status === filterStatus,
+      //   );
+      // }
 
       // Filter the maintenance requests by date range
-      if (filterDateField && filterDateFrom && filterDateTo) {
-        maintenanceRequests = maintenanceRequests.filter((request) => {
-          const requestDate = new Date(request[filterDateField]);
-          return (
-            requestDate >= new Date(filterDateFrom) &&
-            requestDate <= new Date(filterDateTo)
-          );
-        });
-      }
+      // if (filterDateField && filterDateFrom && filterDateTo) {
+      //   maintenanceRequests = maintenanceRequests.filter((request) => {
+      //     const requestDate = new Date(request[filterDateField]);
+      //     return (
+      //       requestDate >= new Date(filterDateFrom) &&
+      //       requestDate <= new Date(filterDateTo)
+      //     );
+      //   });
+      // }
 
       // Sort the maintenance requests by date (newest to oldest)
-      maintenanceRequests.sort((a, b) => {
-        const dateA: any = new Date(a[filterDateField]);
-        const dateB: any = new Date(b[filterDateField]);
-        return dateB - dateA;
-      });
+      // maintenanceRequests.sort((a, b) => {
+      //   const dateA: any = new Date(a[filterDateField]);
+      //   const dateB: any = new Date(b[filterDateField]);
+      //   return dateB - dateA;
+      // });
 
       // Paginate the result
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedMaintenanceRequests = maintenanceRequests.slice(
-        startIndex,
-        endIndex,
-      );
+      // const startIndex = (page - 1) * pageSize;
+      // const endIndex = startIndex + pageSize;
+      // const paginatedMaintenanceRequests = maintenanceRequests.slice(
+      //   startIndex,
+      //   endIndex,
+      // );
 
       return {
         maintenanceRequests,
@@ -146,6 +147,12 @@ export class MaintenanceService {
         ...(status && { status }),
         ...(created_at && { created_at: new Date(created_at) }),
       },
+      include: {
+        user: true,
+        suite: true,
+        images: true,
+        comments: true
+      }
     });
 
     return maintenanceRequests;

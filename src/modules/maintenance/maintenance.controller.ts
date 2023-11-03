@@ -72,21 +72,18 @@ export class MaintenanceController {
     });
   }
 
-  @Get('owner/:filterStatus/:filterDateField/:filterDateFrom/:filterDateTo')
+  @Get('owner')
   async getOwnerMaintenanceBoard(
-    @User() user: IUser,
-    @Param('filterStatus') filterStatus: string,
-    @Param('filterDateField') filterDateField: string,
-    @Param('filterDateFrom') filterDateFrom: string,
-    @Param('filterDateTo') filterDateTo: string
+    @User() user: IUser
     ) {
     return HttpResponse.success({
-      data: await this.maintenanceService.getMaintenanceRequestsByUser(+user.id,{filterStatus:filterStatus ,filterDateField,filterDateFrom,filterDateTo}),
+      data: await this.maintenanceService.getMaintenanceRequestsByUser(+user.id),
       message: 'Maintenance request sorted successfully',
     });
   }
 
   @Patch(':id')
+  @Roles(Role.Owner)
   async updateMaintenanceRequest(
     @Param('id') id: number,
     @Body() updateDto: UpdateDateStatusRequestDto,
