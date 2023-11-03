@@ -107,11 +107,17 @@ export class MaintenanceController {
   async addCommentToMaintenanceRequest(
     @Param('id') id: number,
     @Body() createCommentDto: CreateCommentDto,
+    @User() user: IUser
   ) {
-    return this.maintenanceService.addCommentToMaintenanceRequest(
-      id,
+    const comment = await this.maintenanceService.addCommentToMaintenanceRequest(
+      +id,
       createCommentDto,
-      1, //change
+      +user.id,
     );
+
+    return HttpResponse.success({
+      data: comment,
+      message: 'Comment created successfully',
+    });
   }
 }

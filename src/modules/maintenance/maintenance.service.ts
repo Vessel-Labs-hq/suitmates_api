@@ -73,6 +73,16 @@ export class MaintenanceService {
         const suiteMaintenanceRequests =
           await this.prisma.maintenanceRequest.findMany({
             where: { suite_id: suite.id },
+            include: {
+              user: true,
+              suite: true,
+              images: true,
+              comments: {
+                include:{
+                  user: true
+                }
+              }
+            }
           });
 
         // Step 4: Filter maintenance requests to find the pending ones
@@ -197,7 +207,7 @@ export class MaintenanceService {
   async addCommentToMaintenanceRequest(
     id: number,
     createCommentDto: CreateCommentDto,
-    userId?: number,
+    userId: number,
   ): Promise<any> {
     // Fetch the maintenance request by ID
     const maintenanceRequest = await this.findMaintenanceRequestById(id);
@@ -210,7 +220,7 @@ export class MaintenanceService {
     if (!user) ErrorHelper.BadRequestException('User not found');
 
     // Create a new comment
-    const comment = this.prisma.comment.create({
+    const comment = await this.prisma.comment.create({
       data: {
         text: createCommentDto.text,
         user_id: user.id,
@@ -228,7 +238,7 @@ export class MaintenanceService {
       where: { id },
     });
     if (!maintenanceRequest) {
-      throw new ErrorHelper.NotFoundException('Maintenance request not found');
+      ErrorHelper.NotFoundException('Maintenance request not found');
     }
     return maintenanceRequest;
   }
