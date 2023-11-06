@@ -54,18 +54,24 @@ export class SpaceController {
 
   @Get(':id')
   @Roles(Role.Owner)
-  async findOneSpace(@Param('id') id: string) {
-    const space = await this.spaceService.findOneSpace(+id);
+  async findOneSpace(@Param('id') id: string, @User() user: IUser) {
+    const space = await this.spaceService.findOneSpace(+id,user.id);
     return HttpResponse.success({
       data: space,
       message: 'Space retrieved successfully',
     });
   }
 
-  @Patch(':id')
+  @Patch()
   @Roles(Role.Owner)
-  async update(@Param('id') id: string, @Body() updateSpaceDto: UpdateSpaceDto) {
-    const suite = await this.spaceService.updateSpace(+id, updateSpaceDto);
+  async update(@Body() updateSpaceDto: UpdateSpaceDto, @User() user: IUser) {
+    const suite = await this.spaceService.updateSpace(+user.id, updateSpaceDto);
+    if(!suite){
+      return HttpResponse.badRequest({
+        data: "null",
+        message: 'Space information not found',
+      });
+    }
     return HttpResponse.success({
       data: suite,
       message: 'Space information updated successfully',

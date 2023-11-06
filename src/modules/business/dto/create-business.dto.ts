@@ -29,7 +29,6 @@ export class CreateBusinessDto {
     hours_of_business_close: string;
 
     @IsString()
-    @IsNotEmpty()
     @IsOptional()
     website: string;
 }

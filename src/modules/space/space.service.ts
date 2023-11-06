@@ -37,17 +37,31 @@ export class SpaceService {
     return savedSuites;
   }
 
-  async findOneSpace(id: number) {
+  async findOneSpace(id: number,userId?: number) {
+    const where: { id: number, owner_id?: number } = { id };
+
+    if (userId !== undefined) {
+      where.owner_id = userId;
+    }
+  
     return this.prisma.space.findFirst({
-      where: {
-        id,
-      },
+      where,
     });
   }
 
-  async updateSpace(id: number, updateSpaceDto: UpdateSpaceDto) {
+  async updateSpace(userId: number, updateSpaceDto: UpdateSpaceDto) {
+   
+   const user = await this.prisma.user.findUnique({
+    where:{
+    id: userId,
+   },
+   select: {
+    space: true
+   }
+  });
+
     return await this.prisma.space.update({
-      where: { id },
+      where: { id: user.space.id },
       data: updateSpaceDto,
     });
   }

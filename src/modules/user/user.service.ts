@@ -8,6 +8,7 @@ import { RegisterUserDto } from '../auth/dto/register-user.dto';
 import { Prisma } from '@prisma/client';
 import { StripePaymentService } from '../stripe-payment/stripe-payment.service';
 import { AttachCardDto } from './dto/attach-card.dto';
+import { AttachTenantDto } from './dto/attach-tenant.dto';
 
 export const roundsOfHashing = 10;
 
@@ -18,7 +19,7 @@ export class UserService {
     private stripePaymentService: StripePaymentService,
   ) {}
 
-  async register(userInfo: RegisterUserDto, role: string) {
+  async register(userInfo: any, role: string) {
     const hashedPassword = await PasswordHelper.hashPassword(userInfo.password);
 
     userInfo.password = hashedPassword;
@@ -26,6 +27,7 @@ export class UserService {
       data: {
         email: userInfo.email,
         password: userInfo.password,
+        invited_by: userInfo.invited_by,
       },
     };
     const user = await this.prisma.user.create(data);
@@ -55,6 +57,13 @@ export class UserService {
         bio: true,
         role: true,
         suite: true,
+        documents: true,
+        space: {
+          include: {
+            suite: true,
+          },
+        },
+        businesses: true,
         onboarded: true,
         verified: true,
         stripe_customer_id: true,
@@ -89,6 +98,51 @@ export class UserService {
     });
   }
 
+  async attachTenant(attachTenantDto: AttachTenantDto, user: any) {
+    const tenant = await this.prisma.user.findFirst({
+      where: {
+        email: attachTenantDto.email,
+        invited_by: user.id,
+        role: 'tenant',
+      },
+    });
+    const owner = await this.prisma.user.findFirst({
+      where: { id: user.id },
+      include: {
+        space: {
+          include: {
+            suite: true,
+          },
+        },
+      },
+    });
+    
+    if (!tenant || !owner) {
+      ErrorHelper.NotFoundException("Resource not found");
+    }
+
+    if (owner.space && owner.space.suite) {
+      const matchSuite = owner.space.suite.find(suite => suite.id == attachTenantDto.suite_id);
+    
+      if (matchSuite) {
+
+        return await this.prisma.suite.update({
+          where: { id: matchSuite.id  },
+          data: {
+            tenant: { connect: {id: tenant.id }}
+          },
+        });
+
+      } else {
+        ErrorHelper.NotFoundException("Suite does not belong to current owner");
+      }
+
+    } else {
+      ErrorHelper.NotFoundException("Specified suite does not exist");
+      ;
+    }
+  }
+
   async attachCard(user: any, attachCardDto: AttachCardDto) {
     const { customer, paymentMethod } =
       await this.stripePaymentService.createCustomerAndPaymentMethod(
@@ -104,5 +158,17 @@ export class UserService {
         card_name: attachCardDto.card_name,
       },
     });
+  }
+
+  async getTenants(userId: number){
+    return this.prisma.user.findMany({
+      where: {
+        invited_by: userId
+      },
+      include: {
+        suite: true,
+        businesses: true
+      }
+    })
   }
 }

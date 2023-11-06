@@ -19,11 +19,18 @@ export class MaintenanceService {
     createMaintenanceDto: CreateMaintenanceDto,
     user: any,
   ) {
-    const tenant = await this.userService.findOne(user.id);
+    const tenant = await this.prisma.user.findUnique({
+      where: {id:user.id},
+      include: {suite: true}
+    });
+
+    if(!tenant.suite){
+      ErrorHelper.NotFoundException("User is not assigned to a suite")
+    }
     const maintenanceRequest = await this.prisma.maintenanceRequest.create({
       data: {
         user: { connect: { id: tenant.id } },
-        suite: { connect: { id: tenant?.suite?.id } },
+        suite: { connect: { id: tenant.suite.id } },
         priority: createMaintenanceDto.priority,
         description: createMaintenanceDto.description,
         repair_date: null,
@@ -52,20 +59,30 @@ export class MaintenanceService {
       if (!user) ErrorHelper.BadRequestException('User not found');
 
       // Step 1: Retrieve all suites by a user
-      const userSuites = await this.prisma.space.findMany({
+      const userSuites = await this.prisma.space.findUniqueOrThrow({
         where: { owner_id: userId },
+        include: {suite: true}
       });
-
       let maintenanceRequests = [];
       let totalMaintenanceRequests = 0;
       let pendingMaintenanceRequests = 0;
 
       // Step 2: Iterate through the retrieved suites
-      for (const suite of userSuites) {
+      for (const suite of userSuites.suite) {
         // Step 3: For each suite, retrieve its associated maintenance requests
         const suiteMaintenanceRequests =
           await this.prisma.maintenanceRequest.findMany({
             where: { suite_id: suite.id },
+            include: {
+              user: true,
+              suite: true,
+              images: true,
+              comments: {
+                include:{
+                  user: true
+                }
+              }
+            }
           });
 
         // Step 4: Filter maintenance requests to find the pending ones
@@ -82,47 +99,47 @@ export class MaintenanceService {
       }
 
       // Step 5: Sort, filter, and paginate the result
-      const {
-        filterStatus,
-        filterDateField,
-        filterDateFrom,
-        filterDateTo,
-        page,
-        pageSize,
-      } = options;
+      // const {
+      //   filterStatus,
+        // filterDateField,
+        // filterDateFrom,
+        // filterDateTo,
+        // page,
+        // pageSize,
+      // } = options;
 
       // Filter the maintenance requests by status
-      if (filterStatus) {
-        maintenanceRequests = maintenanceRequests.filter(
-          (request) => request.status === filterStatus,
-        );
-      }
+      // if (filterStatus) {
+      //   maintenanceRequests = maintenanceRequests.filter(
+      //     (request) => request.status === filterStatus,
+      //   );
+      // }
 
       // Filter the maintenance requests by date range
-      if (filterDateField && filterDateFrom && filterDateTo) {
-        maintenanceRequests = maintenanceRequests.filter((request) => {
-          const requestDate = new Date(request[filterDateField]);
-          return (
-            requestDate >= new Date(filterDateFrom) &&
-            requestDate <= new Date(filterDateTo)
-          );
-        });
-      }
+      // if (filterDateField && filterDateFrom && filterDateTo) {
+      //   maintenanceRequests = maintenanceRequests.filter((request) => {
+      //     const requestDate = new Date(request[filterDateField]);
+      //     return (
+      //       requestDate >= new Date(filterDateFrom) &&
+      //       requestDate <= new Date(filterDateTo)
+      //     );
+      //   });
+      // }
 
       // Sort the maintenance requests by date (newest to oldest)
-      maintenanceRequests.sort((a, b) => {
-        const dateA: any = new Date(a[filterDateField]);
-        const dateB: any = new Date(b[filterDateField]);
-        return dateB - dateA;
-      });
+      // maintenanceRequests.sort((a, b) => {
+      //   const dateA: any = new Date(a[filterDateField]);
+      //   const dateB: any = new Date(b[filterDateField]);
+      //   return dateB - dateA;
+      // });
 
       // Paginate the result
-      const startIndex = (page - 1) * pageSize;
-      const endIndex = startIndex + pageSize;
-      const paginatedMaintenanceRequests = maintenanceRequests.slice(
-        startIndex,
-        endIndex,
-      );
+      // const startIndex = (page - 1) * pageSize;
+      // const endIndex = startIndex + pageSize;
+      // const paginatedMaintenanceRequests = maintenanceRequests.slice(
+      //   startIndex,
+      //   endIndex,
+      // );
 
       return {
         maintenanceRequests,
@@ -133,6 +150,33 @@ export class MaintenanceService {
       console.log(error);
       ErrorHelper.InternalServerErrorException(error?.message);
     }
+  }
+  async getSortedMaintenanceRequests(created_at: string, status: any){
+    const maintenanceRequests = await this.prisma.maintenanceRequest.findMany({
+      where: {
+        ...(status && { status }),
+        ...(created_at && { created_at: new Date(created_at) }),
+      },
+      include: {
+        user: true,
+        suite: true,
+        images: true,
+        comments: true
+      }
+    });
+
+    return maintenanceRequests;
+  }
+  async findAllTenantMaintenanceRequest(user: any) {
+    return await this.prisma.maintenanceRequest.findMany({
+      where: {user_id: user.id},
+      include: {
+        user: true,
+        suite: true,
+        images: true,
+        comments: true
+      }
+    });
   }
 
   async updateDateOrStatusRequest(
@@ -163,7 +207,7 @@ export class MaintenanceService {
   async addCommentToMaintenanceRequest(
     id: number,
     createCommentDto: CreateCommentDto,
-    userId?: number,
+    userId: number,
   ): Promise<any> {
     // Fetch the maintenance request by ID
     const maintenanceRequest = await this.findMaintenanceRequestById(id);
@@ -176,7 +220,7 @@ export class MaintenanceService {
     if (!user) ErrorHelper.BadRequestException('User not found');
 
     // Create a new comment
-    const comment = this.prisma.comment.create({
+    const comment = await this.prisma.comment.create({
       data: {
         text: createCommentDto.text,
         user_id: user.id,
@@ -194,7 +238,7 @@ export class MaintenanceService {
       where: { id },
     });
     if (!maintenanceRequest) {
-      throw new ErrorHelper.NotFoundException('Maintenance request not found');
+      ErrorHelper.NotFoundException('Maintenance request not found');
     }
     return maintenanceRequest;
   }

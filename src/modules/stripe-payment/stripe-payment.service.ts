@@ -5,22 +5,19 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from "@nestjs/common";
-import { CardSaveDto } from "./dto/card-save.dto";
-import { CardUpdateDto } from "./dto/card-update.dto";
 import { STRIPE_WEBHOOK_SECRET, STRIPE_CURRENCY } from "src/base/config";
 import StripeError from "src/enums/stripeError.enum";
-import { UserService } from "../user/user.service";
 import { STRIPE_TOKEN } from '@sjnprjl/nestjs-stripe'; // provider token
 import Stripe from "stripe";
 
 
 @Injectable()
 export class StripePaymentService {
-  private stripe: Stripe;
   constructor(
     @Inject(STRIPE_TOKEN) private stripeClient: Stripe
   ) {}
 
+  
 
  // Create a product and a price for each suite
  async createSuiteProductAndPrice(suiteName: string, suiteCost: number, suiteId: string) {

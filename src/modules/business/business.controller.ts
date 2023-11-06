@@ -6,6 +6,8 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
+import { IUser, User } from 'src/decorators';
+
 
 @UseGuards(AuthGuard,RolesGuard)
 @Controller('business')
@@ -30,10 +32,10 @@ export class BusinessController {
     return this.businessService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Patch()
   @Roles(Role.Tenant)
-  update(@Param('id') id: string, @Body() updateBusinessDto: UpdateBusinessDto) {
-    return this.businessService.update(+id, updateBusinessDto);
+  update(@User() user: IUser, @Body() updateBusinessDto: UpdateBusinessDto) {
+    return this.businessService.update(+user.id, updateBusinessDto);
   }
 
   @Delete(':id')

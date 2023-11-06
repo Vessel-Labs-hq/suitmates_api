@@ -1,15 +1,15 @@
-import {IsNotEmpty, IsOptional, IsString} from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateMaintenanceDto {
-    @IsNotEmpty()
-    @IsString()
-    category: string;
+  @IsString()
+  @IsNotEmpty()
+  priority: string;
 
-    @IsNotEmpty()
-    @IsString()
-    priority: string;
+  @IsNotEmpty()
+  @IsString()
+  description: string;
 
-    @IsNotEmpty()
-    @IsString()
-    description: string;
+  @IsNotEmpty()
+  @IsString()
+  category: string;
 }
