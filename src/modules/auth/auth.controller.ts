@@ -20,6 +20,11 @@ export class AuthController {
     return this.authService.login(email, password);
   }
 
+  @Post('sendEmail')
+  async testEmail(){
+    return await this.authService.testEmail()
+  }
+
   @Post('register')
   register(@Body() registerUserDto: RegisterUserDto) {
     return this.authService.register(registerUserDto);

@@ -67,6 +67,10 @@ export class AuthService {
     return
   }
 
+  async testEmail(){
+    return await this.emailService.sentTestMail()
+  }
+
   async VerifyToken(payload: VerifyTokenDto){
     try {
       const result = this.jwtService.verify(payload.token);

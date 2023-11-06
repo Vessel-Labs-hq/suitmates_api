@@ -20,4 +20,16 @@ export class EmailService {
         });
       }
 
+      async sentTestMail(){
+        await this.mailerService.sendMail({
+          to: "normansinto3@gmail.com",
+          subject: 'Welcome to Suite Mate! Confirm your Email',
+          template: '../../../mail/templates/welcome', // `.ejs` extension is appended automatically
+          context: { // filling <%= %> brackets with content
+            name: ``,
+            confirmation_url: "dsd.com",
+            default_password: "sdsdsd"
+          },
+        });
+      }
 }
