@@ -6,13 +6,13 @@ import {
   Patch,
   Param,
   UseGuards,
-  UploadedFiles, Query, UseInterceptors,
+  UploadedFiles,
+  Query,
 } from '@nestjs/common';
 import { MaintenanceService } from './maintenance.service';
 import { CreateMaintenanceDto } from './dto/create-maintenance.dto';
 // import { UpdateMaintenanceDto } from './dto/update-maintenance.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 import { ValidatedImages } from 'src/decorators';
@@ -22,7 +22,6 @@ import { AwsS3Service } from 'src/aws/aws-s3.service';
 import { UpdateDateStatusRequestDto } from './dto/update-date-status.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { SortMaintenanceDto } from './dto/sort-maintenace.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(AuthGuard)
 @Controller('maintenance')
@@ -40,7 +39,6 @@ export class MaintenanceController {
     @User() user: IUser,
     @Body() createMaintenanceDto: CreateMaintenanceDto,
   ) {
-
     const result = await this.maintenanceService.createMaintenanceRequest(
       createMaintenanceDto,
       user,
@@ -73,11 +71,11 @@ export class MaintenanceController {
   }
 
   @Get('owner')
-  async getOwnerMaintenanceBoard(
-    @User() user: IUser
-    ) {
+  async getOwnerMaintenanceBoard(@User() user: IUser) {
     return HttpResponse.success({
-      data: await this.maintenanceService.getMaintenanceRequestsByUser(+user.id),
+      data: await this.maintenanceService.getMaintenanceRequestsByUser(
+        +user.id,
+      ),
       message: 'Maintenance request sorted successfully',
     });
   }
@@ -92,11 +90,12 @@ export class MaintenanceController {
   }
 
   @Get('sorted')
-  async getSortedMaintenanceRequests(
-    @Query() query: SortMaintenanceDto,
-  ) {
+  async getSortedMaintenanceRequests(@Query() query: SortMaintenanceDto) {
     const { status, created_at } = query;
-    const data = await this.maintenanceService.getSortedMaintenanceRequests(status, created_at);
+    const data = await this.maintenanceService.getSortedMaintenanceRequests(
+      status,
+      created_at,
+    );
     return HttpResponse.success({
       data: data,
       message: 'Maintenance request sorted successfully',
@@ -107,13 +106,14 @@ export class MaintenanceController {
   async addCommentToMaintenanceRequest(
     @Param('id') id: number,
     @Body() createCommentDto: CreateCommentDto,
-    @User() user: IUser
+    @User() user: IUser,
   ) {
-    const comment = await this.maintenanceService.addCommentToMaintenanceRequest(
-      +id,
-      createCommentDto,
-      +user.id,
-    );
+    const comment =
+      await this.maintenanceService.addCommentToMaintenanceRequest(
+        +id,
+        createCommentDto,
+        +user.id,
+      );
 
     return HttpResponse.success({
       data: comment,

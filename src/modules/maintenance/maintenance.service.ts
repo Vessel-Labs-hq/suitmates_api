@@ -8,25 +8,28 @@ import { ErrorHelper } from 'src/utils';
 import { MaintenanceRequest } from '@prisma/client';
 import { UpdateDateStatusRequestDto } from './dto/update-date-status.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
+import { NotificationsService } from '../notification/notifications.service';
 
 @Injectable()
 export class MaintenanceService {
   constructor(
     private userService: UserService,
     private prisma: PrismaService,
+    private notification: NotificationsService,
   ) {}
   async createMaintenanceRequest(
     createMaintenanceDto: CreateMaintenanceDto,
     user: any,
   ) {
     const tenant = await this.prisma.user.findUnique({
-      where: {id:user.id},
-      include: {suite: true}
+      where: { id: user.id },
+      include: { suite: true },
     });
 
-    if(!tenant.suite){
-      ErrorHelper.NotFoundException("User is not assigned to a suite")
+    if (!tenant.suite) {
+      ErrorHelper.NotFoundException('User is not assigned to a suite');
     }
+
     const maintenanceRequest = await this.prisma.maintenanceRequest.create({
       data: {
         user: { connect: { id: tenant.id } },
@@ -37,6 +40,7 @@ export class MaintenanceService {
         repair_time: null,
       },
     });
+
     return maintenanceRequest;
   }
 
@@ -61,9 +65,9 @@ export class MaintenanceService {
       // Step 1: Retrieve all suites by a user
       const userSuites = await this.prisma.space.findUniqueOrThrow({
         where: { owner_id: userId },
-        include: {suite: true}
+        include: { suite: true },
       });
-      let maintenanceRequests = [];
+      const maintenanceRequests = [];
       let totalMaintenanceRequests = 0;
       let pendingMaintenanceRequests = 0;
 
@@ -78,11 +82,11 @@ export class MaintenanceService {
               suite: true,
               images: true,
               comments: {
-                include:{
-                  user: true
-                }
-              }
-            }
+                include: {
+                  user: true,
+                },
+              },
+            },
           });
 
         // Step 4: Filter maintenance requests to find the pending ones
@@ -101,11 +105,11 @@ export class MaintenanceService {
       // Step 5: Sort, filter, and paginate the result
       // const {
       //   filterStatus,
-        // filterDateField,
-        // filterDateFrom,
-        // filterDateTo,
-        // page,
-        // pageSize,
+      // filterDateField,
+      // filterDateFrom,
+      // filterDateTo,
+      // page,
+      // pageSize,
       // } = options;
 
       // Filter the maintenance requests by status
@@ -151,7 +155,7 @@ export class MaintenanceService {
       ErrorHelper.InternalServerErrorException(error?.message);
     }
   }
-  async getSortedMaintenanceRequests(created_at: string, status: any){
+  async getSortedMaintenanceRequests(created_at: string, status: any) {
     const maintenanceRequests = await this.prisma.maintenanceRequest.findMany({
       where: {
         ...(status && { status }),
@@ -161,21 +165,21 @@ export class MaintenanceService {
         user: true,
         suite: true,
         images: true,
-        comments: true
-      }
+        comments: true,
+      },
     });
 
     return maintenanceRequests;
   }
   async findAllTenantMaintenanceRequest(user: any) {
     return await this.prisma.maintenanceRequest.findMany({
-      where: {user_id: user.id},
+      where: { user_id: user.id },
       include: {
         user: true,
         suite: true,
         images: true,
-        comments: true
-      }
+        comments: true,
+      },
     });
   }
 
@@ -227,6 +231,35 @@ export class MaintenanceService {
         maintenance_request_id: maintenanceRequest.id,
       },
     });
+
+    // update notification
+    const suiteId = maintenanceRequest.suite_id;
+
+    const suites = await this.prisma.suite.findUnique({
+      where: { id: suiteId },
+      include: { space: true },
+    });
+
+    const spaceOwner = suites.space.owner_id;
+    const tenant = suites.tenant_id;
+
+    if (spaceOwner === userId) {
+      await this.notification.create(
+        tenant,
+        `Space owner commented on a maintenace request you opened`,
+        'maintenance-comment',
+        String(comment.id),
+      );
+    }
+
+    if (tenant === userId) {
+      await this.notification.create(
+        spaceOwner,
+        `Your tenant commented on a maintenace request`,
+        'maintenance-comment',
+        String(comment.id),
+      );
+    }
 
     return comment;
   }

@@ -34,6 +34,7 @@ model User {
   comments                 Comment[]
   notifications            Notification[]
   documents                UserDocument[]
+  last_payment_date        DateTime?
   onboarded                Boolean              @default(false)
   verified                 Boolean              @default(false)
   created_at               DateTime             @default(now())
@@ -113,7 +114,7 @@ model MaintenanceRequest {
   suite_id    Int
   suite       Suite               @relation(fields: [suite_id], references: [id])
   priority    String
-  category  String?
+  category    String?
   description String
   repair_date String?
   repair_time String?
@@ -141,6 +142,8 @@ model Notification {
   user_id    Int
   user       User     @relation(fields: [user_id], references: [id])
   opened     Boolean
+  service    String
+  serviceId  Int?
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
