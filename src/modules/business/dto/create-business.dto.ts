@@ -31,4 +31,8 @@ export class CreateBusinessDto {
     @IsString()
     @IsOptional()
     website: string;
+
+    @IsString()
+    @IsOptional()
+    license: string;
 }

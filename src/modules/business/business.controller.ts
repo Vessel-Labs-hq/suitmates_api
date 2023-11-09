@@ -16,8 +16,8 @@ export class BusinessController {
 
   @Post()
   @Roles(Role.Tenant)
-  create(@Body() createBusinessDto: CreateBusinessDto) {
-    return this.businessService.create(createBusinessDto);
+  create(@Body() createBusinessDto: CreateBusinessDto,@User() user: IUser) {
+    return this.businessService.create(createBusinessDto, user.id);
   }
 
   @Get()

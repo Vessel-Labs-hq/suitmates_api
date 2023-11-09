@@ -7,8 +7,19 @@ import { PrismaService } from 'src/database/prisma.service';
 export class BusinessService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(createBusinessDto: CreateBusinessDto) {
-    return 'This action adds a new business';
+  async create(createBusinessDto: CreateBusinessDto, userId: number) {
+    return await this.prisma.business.create({
+      data:{
+        business_name: createBusinessDto.business_name,
+        days_of_business: createBusinessDto.days_of_business,
+        occupation: createBusinessDto.occupation,
+        hours_of_business_open: createBusinessDto.hours_of_business_open,
+        hours_of_business_close: createBusinessDto.hours_of_business_close,
+        website: createBusinessDto.website,
+        license: createBusinessDto.license,
+        user: {connect: {id: userId}}
+      }
+    });
   }
 
   findAll() {
