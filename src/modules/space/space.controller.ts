@@ -88,4 +88,14 @@ export class SpaceController {
       message: 'Space deleted successfully',
     });
   }
+
+  @Post('tenant/:id/remove')
+  @Roles(Role.Owner)
+  async removeTenant(@Param('id') tenantId: string,@User() owner: IUser){
+    const data = await this.spaceService.removeTenant(+tenantId,+owner.id);
+    return HttpResponse.success({
+      data: data,
+      message: 'Tenant removed successfully',
+    });
+  }
 }

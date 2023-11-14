@@ -37,28 +37,27 @@ export class SpaceService {
     return savedSuites;
   }
 
-  async findOneSpace(id: number,userId?: number) {
-    const where: { id: number, owner_id?: number } = { id };
+  async findOneSpace(id: number, userId?: number) {
+    const where: { id: number; owner_id?: number } = { id };
 
     if (userId !== undefined) {
       where.owner_id = userId;
     }
-  
+
     return this.prisma.space.findFirst({
       where,
     });
   }
 
   async updateSpace(userId: number, updateSpaceDto: UpdateSpaceDto) {
-   
-   const user = await this.prisma.user.findUnique({
-    where:{
-    id: userId,
-   },
-   select: {
-    space: true
-   }
-  });
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        space: true,
+      },
+    });
 
     return await this.prisma.space.update({
       where: { id: user.space.id },
@@ -71,6 +70,58 @@ export class SpaceService {
       where: { id },
       data: { deleted: new Date() },
     });
+  }
+
+  async removeTenant(tenantId: number, ownerId: number) {
+    console.log(tenantId, ownerId);
+    const tenant = await this.prisma.user.findUnique({
+      where: {
+        id: tenantId,
+      },
+      include: {
+        suite: true,
+      },
+    });
+
+    const owner = await this.prisma.user.findUnique({
+      where: {
+        id: ownerId,
+      },
+      include: {
+        space: true,
+      },
+    });
+
+    if (tenant.suite.space_id != owner.space.id) {
+      ErrorHelper.BadRequestException(`Tenant does not belong to space`);
+    }
+
+    await this.prisma.user.update({
+      where: {
+        id: tenantId,
+      },
+      data: {
+        suite: {
+          disconnect: true,
+        },
+      },
+    });
+
+    const userRequests = await this.prisma.maintenanceRequest.findMany({
+      where: { user_id: tenantId },
+    });
+
+    for (const request of userRequests) {
+      await this.prisma.maintenanceImages.deleteMany({
+        where: { maintenance_request_id: request.id },
+      });
+    }
+
+    const deletedRequests = await this.prisma.maintenanceRequest.deleteMany({
+      where: { user_id: tenantId },
+    });
+
+    return true;
   }
 
   // async retrieveSuiteMaintenanceRequest(userId: number) {
