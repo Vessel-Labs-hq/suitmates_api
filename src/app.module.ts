@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './database/prisma.module';
@@ -13,7 +14,7 @@ import { BusinessModule } from './modules/business/business.module';
 import { EmailModule } from './modules/email/email.module';
 import { MaintenanceModule } from './modules/maintenance/maintenance.module';
 import { StripePaymentModule } from './modules/stripe-payment/stripe-payment.module';
-
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { StripePaymentModule } from './modules/stripe-payment/stripe-payment.mod
       cache: true,
       validationSchema: envVarsSchema,
     }),
+    ScheduleModule.forRoot(),
     {
       ...JwtModule.register({
         secret: JWT_SECRET,
@@ -37,6 +39,7 @@ import { StripePaymentModule } from './modules/stripe-payment/stripe-payment.mod
     EmailModule,
     MaintenanceModule,
     StripePaymentModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -15,7 +15,7 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private userService: UserService,
-    private emailService: EmailService
+    private emailService: EmailService,
   ) {}
 
   async login(email: string, password: string) {
@@ -42,12 +42,12 @@ export class AuthService {
         `User with email "${payload.email}" already exist`,
       );
     }
-    const newUser = await this.userService.register(payload,'owner');
+    const newUser = await this.userService.register(payload, 'owner');
 
     return await this.signUserToken(newUser);
   }
 
-  async registerTenant(payload: RegisterTenantDto,owner_id: number){
+  async registerTenant(payload: RegisterTenantDto, owner_id: number) {
     const emailExists = await this.prisma.user.findUnique({
       where: { email: payload.email },
     });
@@ -56,22 +56,22 @@ export class AuthService {
         `User with email ${payload.email} already exist`,
       );
     }
-    const password: string = this.generateRandomString(8)
+    const password: string = this.generateRandomString(8);
     const data = {
       email: payload.email,
       password: password,
-      invited_by: owner_id
-    }
-    await this.userService.register(data,'tenant');
+      invited_by: owner_id,
+    };
+    await this.userService.register(data, 'tenant');
     await this.emailService.sendUserWelcome(payload.email, password);
-    return
+    return;
   }
 
-  async testEmail(){
-    return await this.emailService.sentTestMail()
+  async testEmail() {
+    return await this.emailService.sentTestMail();
   }
 
-  async VerifyToken(payload: VerifyTokenDto){
+  async VerifyToken(payload: VerifyTokenDto) {
     try {
       const result = this.jwtService.verify(payload.token);
       return result;
@@ -79,7 +79,6 @@ export class AuthService {
       ErrorHelper.BadRequestException('Invalid or Expired Token');
     }
   }
-  
 
   private async signUserToken(user: any) {
     const userInfo = {
@@ -89,7 +88,7 @@ export class AuthService {
       email: user.email,
       id: user.id,
       onboarded: user.onboarded,
-      verified: user.verified
+      verified: user.verified,
     };
 
     const token = this.jwtService.sign(userInfo);
@@ -101,13 +100,13 @@ export class AuthService {
   }
 
   private generateRandomString(length: number) {
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
+    let result = '';
+    const characters =
+      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
       result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
   }
-    
 }
