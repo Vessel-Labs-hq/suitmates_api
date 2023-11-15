@@ -98,4 +98,13 @@ export class SpaceController {
       message: 'Tenant removed successfully',
     });
   }
+
+  @Post('/tenant/:tenantId/suite/:suiteId/change')
+  @Roles(Role.Owner)
+  async tenantSuiteChange(@Param('tenantId') tenantId: string,@Param('suiteId') suiteId: string,@User() owner: IUser){
+    return HttpResponse.success({
+      data:     await this.spaceService.tenantSuiteChange(+tenantId, +suiteId, +owner.id),
+      message: 'Suite changed successfully',
+    });
+  }
 }

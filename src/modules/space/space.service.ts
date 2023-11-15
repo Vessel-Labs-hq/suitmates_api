@@ -124,6 +124,20 @@ export class SpaceService {
     return true;
   }
 
+  async tenantSuiteChange(tenantId: number,suiteId: number, ownerId: number){
+    const removeTenant = await this.removeTenant(tenantId,ownerId);
+    if(removeTenant != true){
+      ErrorHelper.BadRequestException("Removing tenant from previous suite failed ")
+    }
+
+    return await this.prisma.suite.update({
+      where: { id: suiteId },
+      data: {
+        tenant: { connect: {id: tenantId }}
+      },
+    });
+  }
+
   // async retrieveSuiteMaintenanceRequest(userId: number) {
   //   try {
   //     // Step 1: Retrieve all suites by a user
