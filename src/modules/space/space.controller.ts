@@ -18,6 +18,7 @@ import { AuthGuard } from 'src/guards/auth.guard';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
+import { UpdateSuiteDto } from './dto/update-suite.dto';
 
 @UseGuards(AuthGuard,RolesGuard)
 @Controller('space')
@@ -105,6 +106,16 @@ export class SpaceController {
     return HttpResponse.success({
       data:     await this.spaceService.tenantSuiteChange(+tenantId, +suiteId, +owner.id),
       message: 'Suite changed successfully',
+    });
+  }
+
+  @Post('/update/suite/:suiteId')
+  @Roles(Role.Owner)
+  async updateSuite(@Body() updateSuiteDto:UpdateSuiteDto ,@Param('suiteId') suiteId: string,@User() owner: IUser){
+    const suite = await this.spaceService.updateSuite(+suiteId, +owner.id,updateSuiteDto);
+    return HttpResponse.success({
+      data: suite,
+      message: 'Suite updated successfully',
     });
   }
 }

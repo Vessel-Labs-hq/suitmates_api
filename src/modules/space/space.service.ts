@@ -4,6 +4,7 @@ import { UpdateSpaceDto } from './dto/update-space.dto';
 import { PrismaService } from 'src/database/prisma.service';
 import { CreateSuitesDto } from './dto/create-suite.dto';
 import { ErrorHelper } from 'src/utils';
+import { UpdateSuiteDto } from './dto/update-suite.dto';
 
 @Injectable()
 export class SpaceService {
@@ -135,6 +136,13 @@ export class SpaceService {
       data: {
         tenant: { connect: {id: tenantId }}
       },
+    });
+  }
+
+  async updateSuite(suiteId: number, ownerId: number,updateSuiteDto: UpdateSuiteDto){
+    return  await this.prisma.suite.update({
+      where:{id: suiteId},
+      data: updateSuiteDto
     });
   }
 
