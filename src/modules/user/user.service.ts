@@ -9,6 +9,7 @@ import { Prisma } from '@prisma/client';
 import { StripePaymentService } from '../stripe-payment/stripe-payment.service';
 import { AttachCardDto } from './dto/attach-card.dto';
 import { AttachTenantDto } from './dto/attach-tenant.dto';
+import { UpdateCardDto } from './dto/update-card.dto';
 
 export const roundsOfHashing = 10;
 
@@ -159,6 +160,19 @@ export class UserService {
       },
     });
   }
+
+async updateCard(updateCardDto: UpdateCardDto, user){
+
+  const newPaymentMethodId = await this.stripePaymentService.updatePaymentMethod(updateCardDto.customer_id, updateCardDto.payment_method_id);
+  return await this.prisma.user.update({
+    where: { id: user.id },
+    data: {
+      stripe_payment_method_id: newPaymentMethodId.id,
+      card_last_digit: updateCardDto.card_last_digit,
+      card_name: updateCardDto.card_name,
+    },
+  });
+}
 
   async getTenants(userId: number){
     return this.prisma.user.findMany({

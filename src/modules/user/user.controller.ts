@@ -24,6 +24,7 @@ import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 import { AttachTenantDto } from './dto/attach-tenant.dto';
+import { UpdateCardDto } from './dto/update-card.dto';
 
 @UseGuards(AuthGuard,RolesGuard)
 @Controller('user')
@@ -102,6 +103,15 @@ export class UserController {
   @Post('/attach-card')
   async attachCard(@Body()  attachCardDto: AttachCardDto,@User() user: IUser){
     const response = await this.userService.attachCard(user,attachCardDto);
+    return HttpResponse.success({
+      data: response,
+      message: 'Card attached successfully',
+    });
+  }
+
+  @Post('/update-card')
+  async updateCard(@Body()  updateCardDto: UpdateCardDto,@User() user: IUser){
+    const response = await this.userService.updateCard(updateCardDto,user);
     return HttpResponse.success({
       data: response,
       message: 'Card attached successfully',
