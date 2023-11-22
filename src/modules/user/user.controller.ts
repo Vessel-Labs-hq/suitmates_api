@@ -114,7 +114,7 @@ export class UserController {
     const response = await this.userService.updateCard(updateCardDto,user);
     return HttpResponse.success({
       data: response,
-      message: 'Card attached successfully',
+      message: 'Card updated successfully',
     });
   }
 
