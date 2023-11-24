@@ -11,6 +11,8 @@ export interface IUser {
   onboarded: boolean;
   avatar: string;
   bio: string;
+  stripe_payment_method_id: string;
+  stripe_customer_id: string;
 }
 
 export const User = createParamDecorator<any, any, IUser>(
