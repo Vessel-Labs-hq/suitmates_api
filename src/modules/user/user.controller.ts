@@ -26,7 +26,7 @@ import { Role } from 'src/enums/role.enum';
 import { AttachTenantDto } from './dto/attach-tenant.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 
-@UseGuards(AuthGuard,RolesGuard)
+@UseGuards(AuthGuard, RolesGuard)
 @Controller('user')
 export class UserController {
   constructor(
@@ -36,14 +36,14 @@ export class UserController {
 
   @Get('/tenants')
   @Roles(Role.Owner)
-  async getTenants(@User() user: IUser){
+  async getTenants(@User() user: IUser) {
     const response = await this.userService.getTenants(+user.id);
     return HttpResponse.success({
       data: response,
       message: 'Tenant records retrieved successfully',
     });
   }
-  
+
   @Get()
   async findAll() {
     const users = await this.userService.findAll();
@@ -55,9 +55,9 @@ export class UserController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string,@User() user: IUser) {
-    if(user.id !== +id) {
-        ErrorHelper.BadRequestException(`Bad request`);
+  async findOne(@Param('id') id: string, @User() user: IUser) {
+    if (user.id !== +id) {
+      ErrorHelper.BadRequestException(`Bad request`);
     }
     const userData = await this.userService.findOne(+user.id);
 
@@ -76,13 +76,12 @@ export class UserController {
     @UploadedFile() avatar: Express.Multer.File,
   ) {
     if (avatar) {
-     
-    const avatarLink = await this.awsS3Service.uploadFile(
-      avatar.originalname,
-      avatar.buffer,
-    );
-    
-    updateUserDto.avatar = avatarLink;
+      const avatarLink = await this.awsS3Service.uploadFile(
+        avatar.originalname,
+        avatar.buffer,
+      );
+
+      updateUserDto.avatar = avatarLink;
     }
     const data = await this.userService.update(+user.id, updateUserDto);
     return HttpResponse.success({
@@ -101,30 +100,33 @@ export class UserController {
   }
 
   @Post('/attach-card')
-  async attachCard(@Body()  attachCardDto: AttachCardDto,@User() user: IUser){
-    const response = await this.userService.attachCard(user,attachCardDto);
+  async attachCard(@Body() attachCardDto: AttachCardDto, @User() user: IUser) {
+    const response = await this.userService.attachCard(user, attachCardDto);
     return HttpResponse.success({
       data: response,
       message: 'Card attached successfully',
     });
   }
 
-  @Post('/update-card')
-  async updateCard(@Body()  updateCardDto: UpdateCardDto,@User() user: IUser){
-    const response = await this.userService.updateCard(updateCardDto,user);
-    return HttpResponse.success({
-      data: response,
-      message: 'Card updated successfully',
-    });
-  }
-
   @Post('/attach-tenant')
   @Roles(Role.Owner)
-  async attachTenant(@Body() attachTenantDto: AttachTenantDto,@User() user: IUser){
-    const response = await this.userService.attachTenant(attachTenantDto,user);
+  async attachTenant(
+    @Body() attachTenantDto: AttachTenantDto,
+    @User() user: IUser,
+  ) {
+    const response = await this.userService.attachTenant(attachTenantDto, user);
     return HttpResponse.success({
       data: response,
       message: 'Tenant attached successfully',
+    });
+  }
+
+  @Post('/update-card')
+  async updateCard(@Body() updateCardDto: UpdateCardDto, @User() user: IUser) {
+    const response = await this.userService.updateCard(updateCardDto, user);
+    return HttpResponse.success({
+      data: response,
+      message: 'Card updated successfully',
     });
   }
 }
