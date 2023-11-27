@@ -164,14 +164,14 @@ export class UserService {
 async updateCard(updateCardDto: UpdateCardDto, user){
 
   const newPaymentMethodId = await this.stripePaymentService.updatePaymentMethod(updateCardDto.customer_id, updateCardDto.payment_method_id, user.stripe_payment_method_id);
-  // return await this.prisma.user.update({
-  //   where: { id: user.id },
-  //   data: {
-  //     // stripe_payment_method_id: newPaymentMethodId.id,
-  //     card_last_digit: updateCardDto.card_last_digit,
-  //     card_name: updateCardDto.card_name,
-  //   },
-  // });
+  return await this.prisma.user.update({
+    where: { id: user.id },
+    data: {
+      stripe_payment_method_id: newPaymentMethodId.id,
+      card_last_digit: updateCardDto.card_last_digit,
+      card_name: updateCardDto.card_name,
+    },
+  });
 
   return newPaymentMethodId;
 }

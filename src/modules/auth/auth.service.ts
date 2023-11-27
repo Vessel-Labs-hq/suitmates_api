@@ -89,6 +89,8 @@ export class AuthService {
       id: user.id,
       onboarded: user.onboarded,
       verified: user.verified,
+      stripe_payment_method_id: user.stripe_payment_method_id,
+      stripe_customer_id: user.stripe_customer_id
     };
 
     const token = this.jwtService.sign(userInfo);
