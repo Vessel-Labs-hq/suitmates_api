@@ -167,7 +167,7 @@ async updateCard(updateCardDto: UpdateCardDto, user){
   return await this.prisma.user.update({
     where: { id: user.id },
     data: {
-      stripe_payment_method_id: newPaymentMethodId.id,
+      // stripe_payment_method_id: newPaymentMethodId.id,
       card_last_digit: updateCardDto.card_last_digit,
       card_name: updateCardDto.card_name,
     },
