@@ -90,7 +90,7 @@ export class StripePaymentService {
   // Update a payment method by customer ID and payment method ID
   async updatePaymentMethod(customerId: string, paymentMethodId: string, oldPaymentId: string) {
     // Detach the current default payment method from the customer
-    const currentPaymentMethod = await this.stripeClient.paymentMethods.retrieve(customerId);
+    // const currentPaymentMethod = await this.stripeClient.paymentMethods.retrieve(customerId);
     await this.stripeClient.paymentMethods.detach(oldPaymentId);
 
     // Attach the new payment method to the customer
