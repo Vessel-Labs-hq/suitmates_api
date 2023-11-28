@@ -5,10 +5,11 @@ import { PrismaService } from 'src/database/prisma.service';
 import { CreateSuitesDto } from './dto/create-suite.dto';
 import { ErrorHelper } from 'src/utils';
 import { UpdateSuiteDto } from './dto/update-suite.dto';
+import { StripePaymentService } from '../stripe-payment/stripe-payment.service';
 
 @Injectable()
 export class SpaceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private stripePaymentService: StripePaymentService) {}
 
   async createSpace(data: CreateSpaceDto, userId: number) {
     return this.prisma.space.create({
@@ -144,6 +145,19 @@ export class SpaceService {
       where:{id: suiteId},
       data: updateSuiteDto
     });
+  }
+
+  async ownerRentHistory(owner){
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: owner.id,
+      },
+      select: {
+        space: true,
+      },
+    });
+    const rentHistory = await this.stripePaymentService.getAllPaymentsBySpaceId(""+user.space.id);
+    return rentHistory;
   }
 
   // async retrieveSuiteMaintenanceRequest(userId: number) {

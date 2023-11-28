@@ -13,11 +13,17 @@ export class StripePaymentService {
     suiteName: string,
     suiteCost: number,
     suiteId: string,
+    suiteNumber: string,
+    spaceId: string,
   ) {
     // Create a product with the suite name
     const product = await this.stripeClient.products.create({
       name: suiteName,
-      id: suiteId,
+      metadata: {
+        suiteId: suiteId,
+        spaceId: spaceId,
+        suiteNumber: suiteNumber
+      },
     });
 
     // Create a price with the suite cost and billing interval (yearly)
@@ -88,7 +94,11 @@ export class StripePaymentService {
   }
 
   // Update a payment method by customer ID and payment method ID
-  async updatePaymentMethod(customerId: string, paymentMethodId: string, oldPaymentId: string) {
+  async updatePaymentMethod(
+    customerId: string,
+    paymentMethodId: string,
+    oldPaymentId: string,
+  ) {
     // Detach the current default payment method from the customer
     // const currentPaymentMethod = await this.stripeClient.paymentMethods.retrieve(customerId);
     await this.stripeClient.paymentMethods.detach(oldPaymentId);
@@ -132,161 +142,44 @@ export class StripePaymentService {
     return result;
   }
 
-  // public async createSubscription(priceId: string, customerId: string) {
-  //   try {
-  //     return await this.stripe.subscriptions.create({
-  //       customer: customerId,
-  //       items: [
-  //         {
-  //           price: priceId,
-  //         },
-  //       ],
-  //     });
-  //   } catch (error) {
-  //     if (error?.code === StripeError.ResourceMissing) {
-  //       throw new BadRequestException("Credit card not set up");
-  //     }
-  //     throw new InternalServerErrorException();
-  //   }
-  // }
+  // Retrieve all payments based on spaceId metadata
+  async getAllPaymentsBySpaceId(spaceId: string) {
+    // Define an empty array to store the payments
+    let payments = [];
+    let paymentList;
+    // Define the initial parameters for the list method
+    let params: { [key: string]: any } = { limit: 100 };
 
-  // public async listSubscriptions(priceId: string, customerId: string) {
-  //   return this.stripe.subscriptions.list({
-  //     customer: customerId,
-  //     price: priceId,
-  //   });
-  // }
+    // Use a do-while loop to paginate through the payments
+    do {
+      // Retrieve a list of payments
+      paymentList = await this.stripeClient.paymentIntents.list(params);
 
-  // public async createMonthlySubscription(user, planId: string) {
-  //   const data = await this.userService.findOneByEmail(user.email);
-  //   const customerId: string = data.stripeCustomerId;
-  //   const priceId = planId;
-  //   const subscriptions = await this.listSubscriptions(priceId, customerId);
-  //   if (subscriptions.data.length) {
-  //     throw new BadRequestException("Customer already subscribed");
-  //   }
-  //   return this.createSubscription(priceId, customerId);
-  // }
+      // Filter the payments based on the spaceId metadata
+      const filteredPayments = paymentList.data.filter(
+        (payment) => payment.metadata.spaceId === spaceId,
+      ).map(payment => ({
+        suiteNumber: payment.metadata.suiteNumber,
+        suiteId: payment.metadata.suiteId,
+        spaceId: payment.metadata.spaceId,
+        amount: payment.amount / 100, 
+        dateOfPayment: new Date(payment.created * 1000),
+        status: payment.status, // payment status
+      }));
 
-  // public async getMonthlySubscription(user, planId: string) {
-  //   const data = await this.userService.findOneByEmail(user.email);
-  //   const customerId: string = data.stripeCustomerId;
-  //   const priceId = planId;
-  //   const subscriptions = await this.listSubscriptions(priceId, customerId);
+      // Add the filtered payments to the payments array
+      payments = [...payments, ...filteredPayments];
 
-  //   if (!subscriptions.data.length) {
-  //     throw new NotFoundException("Customer not subscribed");
-  //   }
-  //   return subscriptions.data[0];
-  // }
+      // Get the last payment's ID
+      const lastPaymentId = paymentList.data[paymentList.data.length - 1].id;
 
-  // public async createCustomer(name: string, email: string) {
-  //   const stripeCustomer = await this.stripe.customers.create({
-  //     name,
-  //     email,
-  //   });
-  //   await this.userService.updateByEmail(email, {
-  //     stripeCustomerId: stripeCustomer.id,
-  //   });
-  //   return stripeCustomer;
-  // }
+      // Set the starting_after parameter for the next iteration
+      params.starting_after = lastPaymentId;
+    } while (payments.length < paymentList.total_count);
 
-  // async getAllPlans() {
-  //   try {
-  //     // Fetch all products from Stripe
-  //     const products = await this.stripe.products.list({ active: true });
-
-  //     // Iterate through each product to fetch its pricing (prices)
-  //     const productsWithPricing = await Promise.all(
-  //       products.data.map(async (product) => {
-  //         const prices = await this.stripe.prices.list({ product: product.id });
-  //         return {
-  //           product: product,
-  //           prices: prices.data,
-  //         };
-  //       })
-  //     );
-
-  //     return productsWithPricing;
-  //   } catch (error) {
-  //     throw new InternalServerErrorException("Error while fetching products.");
-  //   }
-  // }
-
-  // public async attachCreditCard(user, paymentMethod: CardSaveDto) {
-  //   const data = await this.userService.findOneByEmail(user.email);
-  //   if (!data.stripeCustomerId) {
-  //     await this.createCustomer(paymentMethod.cardLastNumber, data.email);
-  //   }
-
-  //   const userData = await this.userService.findOneByEmail(user.email);
-  //   const personDate = await this.personService.getPersonData(userData.id);
-
-  //   await this.settingsService.updateSettings(
-  //     userData.id,
-  //     personDate["_id"].toString(),
-  //     {
-  //       cardName: paymentMethod.cardName,
-  //       cardLastNumber: paymentMethod.cardLastNumber,
-  //     }
-  //   );
-  //   // await this.userService.updateByCustomerId(userData.stripeCustomerId, {
-  //   //   cardName: paymentMethod.cardName,
-  //   //   cardLastNumber: paymentMethod.cardLastNumber
-  //   // })
-  //   const customerId: string = userData.stripeCustomerId;
-  //   return await this.stripe.setupIntents.create({
-  //     customer: customerId,
-  //     payment_method: paymentMethod.paymentMethodId,
-  //   });
-  // }
-
-  // public async updateCreditCard(user, cardDetails: CardUpdateDto) {
-  //   try {
-  //     const userData = await this.userService.findOneByEmail(user.email);
-
-  //     // // Create a new Payment Method for the updated card details
-  //     const paymentMethod = await this.stripe.paymentMethods.create({
-  //       type: "card",
-  //       card: {
-  //         token: cardDetails.paymentMethodId, // Token received from client
-  //       },
-  //     });
-
-  //     // Attach the Payment Method to the customer
-  //     await this.stripe.paymentMethods.attach(paymentMethod.id, {
-  //       customer: userData.stripeCustomerId,
-  //     });
-
-  //     // Update the customer's default payment method to the new Payment Method
-  //     await this.stripe.customers.update(userData.stripeCustomerId, {
-  //       invoice_settings: {
-  //         default_payment_method: paymentMethod.id,
-  //       },
-  //     });
-
-  //     const personDate = await this.personService.getPersonData(userData.id);
-  //     await this.settingsService.updateSettings(
-  //       userData.id,
-  //       personDate["_id"].toString(),
-  //       {
-  //         cardName: cardDetails.cardName,
-  //         cardLastNumber: cardDetails.cardLastNumber,
-  //       }
-  //     );
-
-  //     return "Card details updated successfully.";
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new InternalServerErrorException(
-  //       "Error while updating card details."
-  //     );
-  //   }
-  // }
-
-  // async cancelSubscription(id: string) {
-  //   return await this.stripe.subscriptions.cancel(id);
-  // }
+    // Return the payments array
+    return payments;
+  }
 
   // async webHookListen(req: Buffer, signature: string) {
   //   try {

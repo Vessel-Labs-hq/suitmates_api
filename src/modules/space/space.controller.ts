@@ -118,4 +118,14 @@ export class SpaceController {
       message: 'Suite updated successfully',
     });
   }
+
+  @Get('/owner/rent-history')
+  @Roles(Role.Owner)
+  async ownerRentHistory(@User() owner: IUser){
+    const response = await this.spaceService.ownerRentHistory(owner)
+    return HttpResponse.success({
+      data: response,
+      message: 'Rent History retrieved successfully',
+    });
+  }
 }
