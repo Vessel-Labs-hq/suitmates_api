@@ -34,6 +34,14 @@ export class SpaceService {
           space: { connect: { id: space.id } },
         },
       });
+
+      await this.stripePaymentService.createSuiteProductAndPrice(
+        space.space_name,
+        createdSuite.suite_cost,
+        ""+createdSuite.id,
+        createdSuite.suite_number,
+        ""+space.id
+      );
       savedSuites.push(createdSuite);
     }
     return savedSuites;
@@ -75,7 +83,6 @@ export class SpaceService {
   }
 
   async removeTenant(tenantId: number, ownerId: number) {
-    console.log(tenantId, ownerId);
     const tenant = await this.prisma.user.findUnique({
       where: {
         id: tenantId,
@@ -109,6 +116,8 @@ export class SpaceService {
       },
     });
 
+    const subscription = await this.stripePaymentService.getCurrentSubscriptionBySuiteId(tenant.stripe_customer_id, tenant.suite.id);
+    await this.stripePaymentService.cancelSubscription(subscription.id)
     const userRequests = await this.prisma.maintenanceRequest.findMany({
       where: { user_id: tenantId },
     });
@@ -127,17 +136,49 @@ export class SpaceService {
   }
 
   async tenantSuiteChange(tenantId: number,suiteId: number, ownerId: number){
+    
+    const tenant = await this.prisma.user.findUnique({
+      where: {
+        id: tenantId,
+      },
+      include: {
+        suite: true,
+      },
+    });
+
+    const owner = await this.prisma.user.findUnique({
+      where: {
+        id: ownerId,
+      },
+      include: {
+        space: true,
+      },
+    });
+
     const removeTenant = await this.removeTenant(tenantId,ownerId);
     if(removeTenant != true){
       ErrorHelper.BadRequestException("Removing tenant from previous suite failed ")
     }
 
-    return await this.prisma.suite.update({
+    
+    
+    
+    const newSuite = await this.prisma.suite.update({
       where: { id: suiteId },
       data: {
         tenant: { connect: {id: tenantId }}
       },
     });
+    
+    //cancel old subscription
+    const subscription = await this.stripePaymentService.getCurrentSubscriptionBySuiteId(tenant.stripe_customer_id, tenant.suite.id);
+    await this.stripePaymentService.cancelSubscription(subscription.id)
+    
+    //create new subscription
+    const suiteSubscription = await this.stripePaymentService.getSubscriptionBySuiteId(suiteId);
+    await this.stripePaymentService.createSubscription(tenant.stripe_customer_id,suiteSubscription.items.data[0].price.id,""+suiteId);
+
+    return newSuite;
   }
 
   async updateSuite(suiteId: number, ownerId: number,updateSuiteDto: UpdateSuiteDto){

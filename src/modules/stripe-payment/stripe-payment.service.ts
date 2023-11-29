@@ -31,7 +31,7 @@ export class StripePaymentService {
       unit_amount: suiteCost,
       currency: STRIPE_CURRENCY,
       recurring: {
-        interval: 'year',
+        interval: 'month',
       },
       product: product.id,
     });
@@ -70,7 +70,7 @@ export class StripePaymentService {
   }
 
   // Create a subscription for a customer and a price
-  async createSubscription(customerId: string, priceId: string) {
+  async createSubscription(customerId: string, priceId: string,suiteId: string) {
     // Create a subscription with the customer and price
     const subscription = await this.stripeClient.subscriptions.create({
       customer: customerId,
@@ -79,6 +79,9 @@ export class StripePaymentService {
           price: priceId,
         },
       ],
+      metadata:{
+        suiteId: suiteId
+      },
       expand: ['latest_invoice.payment_intent'],
     });
 
@@ -180,6 +183,48 @@ export class StripePaymentService {
     // Return the payments array
     return payments;
   }
+
+  async getAllSubscriptions() {
+    let allSubscriptions = [];
+    let lastId;
+  
+    while (true) {
+      const subscriptions = await this.stripeClient.subscriptions.list({
+        limit: 100,
+        starting_after: lastId,
+      });
+  
+      allSubscriptions = [...allSubscriptions, ...subscriptions.data];
+  
+      if (subscriptions.has_more) {
+        lastId = subscriptions.data[subscriptions.data.length - 1].id;
+      } else {
+        break;
+      }
+    }
+  
+    return allSubscriptions;
+  }
+  
+  async getSubscriptionBySuiteId(suiteId) {
+    const subscriptions = await this.getAllSubscriptions();
+  
+    const subscription = subscriptions.find(sub => sub.metadata.suiteId === suiteId);
+  
+    return subscription;
+  }
+  
+  async getCurrentSubscriptionBySuiteId(customerId, suiteId) {
+    const subscriptions = await this.stripeClient.subscriptions.list({
+      customer: customerId,
+      status: 'active',
+    });
+  
+    const currentSubscription = subscriptions.data.find(sub => sub.metadata.suiteId === suiteId);
+  
+    return currentSubscription;
+  }
+  
 
   // async webHookListen(req: Buffer, signature: string) {
   //   try {
