@@ -13,7 +13,7 @@ async function bootstrap() {
   app.enableCors({
     origin: '*',
     methods: 'GET, POST, PUT, DELETE,PATCH',
-    allowedHeaders: 'Content-Type, Origin,Authorization',
+    allowedHeaders: 'Content-Type, Origin,Authorization,ngrok-skip-browser-warning',
   });
 
   app.useGlobalPipes(new ValidationPipe());

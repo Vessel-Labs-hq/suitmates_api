@@ -127,17 +127,17 @@ export class UserService {
     
       if (matchSuite) {
 
-        const connect = await this.prisma.suite.update({
+        
+        const product = await this.stripePaymentService.getProductBySuiteId(matchSuite.id);
+        const price_id = await this.stripePaymentService.getPriceIdByProductId(product.id);
+        await this.stripePaymentService.createSubscription(tenant.stripe_customer_id,price_id,""+matchSuite.id);
+        return await this.prisma.suite.update({
           where: { id: matchSuite.id  },
           data: {
             tenant: { connect: {id: tenant.id }}
           },
         });
 
-        const suiteSubscription = await this.stripePaymentService.getSubscriptionBySuiteId(matchSuite.id);
-        await this.stripePaymentService.createSubscription(tenant.stripe_customer_id,suiteSubscription.items.data[0].price.id,""+matchSuite.id);
-
-        return connect;
       } else {
         ErrorHelper.NotFoundException("Suite does not belong to current owner");
       }

@@ -147,41 +147,41 @@ export class StripePaymentService {
 
   // Retrieve all payments based on spaceId metadata
   async getAllPaymentsBySpaceId(spaceId: string) {
-    // Define an empty array to store the payments
-    let payments = [];
-    let paymentList;
-    // Define the initial parameters for the list method
-    let params: { [key: string]: any } = { limit: 100 };
+   // Retrieve all products with the specific spaceId in their metadata
+  const products = await this.stripeClient.products.list();
+  const filteredProducts = products.data.filter(product => product.metadata.spaceId === spaceId);
 
-    // Use a do-while loop to paginate through the payments
-    do {
-      // Retrieve a list of payments
-      paymentList = await this.stripeClient.paymentIntents.list(params);
+  let allInvoices = [];
 
-      // Filter the payments based on the spaceId metadata
-      const filteredPayments = paymentList.data.filter(
-        (payment) => payment.metadata.spaceId === spaceId,
-      ).map(payment => ({
-        suiteNumber: payment.metadata.suiteNumber,
-        suiteId: payment.metadata.suiteId,
-        spaceId: payment.metadata.spaceId,
-        amount: payment.amount / 100, 
-        dateOfPayment: new Date(payment.created * 1000),
-        status: payment.status, // payment status
-      }));
+  for (const product of filteredProducts) {
+    // Retrieve all prices associated with the product
+    const prices = await this.stripeClient.prices.list({ product: product.id });
 
-      // Add the filtered payments to the payments array
-      payments = [...payments, ...filteredPayments];
+    for (const price of prices.data) {
+      // Retrieve all subscriptions associated with the price
+      const subscriptions = await this.stripeClient.subscriptions.list({ price: price.id });
 
-      // Get the last payment's ID
-      const lastPaymentId = paymentList.data[paymentList.data.length - 1].id;
+      for (const subscription of subscriptions.data) {
+        // Retrieve all invoices associated with the subscription
+        const invoices = await this.stripeClient.invoices.list({ subscription: subscription.id });
 
-      // Set the starting_after parameter for the next iteration
-      params.starting_after = lastPaymentId;
-    } while (payments.length < paymentList.total_count);
+        // Add the invoices to the allInvoices array
+        for (const invoice of invoices.data) {
+          allInvoices.push({
+            suiteNumber: product.metadata.suiteNumber,
+            suiteId: product.metadata.suiteId,
+            spaceId: product.metadata.spaceId,
+            amount: invoice.amount_paid / 100, // Convert from cents to dollars
+            dateOfPayment: new Date(invoice.created  * 1000), // Convert from Unix timestamp to JavaScript Date
+            status: invoice.status,
+          });
+        }
+      }
+    }
+  }
 
-    // Return the payments array
-    return payments;
+  return allInvoices;
+
   }
 
   async getAllSubscriptions() {
@@ -206,12 +206,26 @@ export class StripePaymentService {
     return allSubscriptions;
   }
   
-  async getSubscriptionBySuiteId(suiteId) {
-    const subscriptions = await this.getAllSubscriptions();
+  // async getSubscriptionBySuiteId(suiteId) {
+  //   const subscriptions = await this.getAllSubscriptions();
   
-    const subscription = subscriptions.find(sub => sub.metadata.suiteId === suiteId);
+  //   const subscription = subscriptions.find(sub => sub.metadata.suiteId === suiteId);
   
-    return subscription;
+  //   return subscription;
+  // }
+
+  async getProductBySuiteId(suiteId) {
+    const products = await this.stripeClient.products.list();
+    const product = products.data.find(prod => prod.metadata.suiteId == suiteId);
+    return product;
+  }
+
+  async getPriceIdByProductId(productId) {
+    const prices = await this.stripeClient.prices.list();
+  
+    const price = prices.data.find(price => price.product == productId);
+  
+    return price ? price.id : null;
   }
   
   async getCurrentSubscriptionBySuiteId(customerId, suiteId) {
@@ -219,8 +233,7 @@ export class StripePaymentService {
       customer: customerId,
       status: 'active',
     });
-  
-    const currentSubscription = subscriptions.data.find(sub => sub.metadata.suiteId === suiteId);
+    const currentSubscription = subscriptions.data.find(sub => sub.metadata.suiteId == suiteId);
   
     return currentSubscription;
   }

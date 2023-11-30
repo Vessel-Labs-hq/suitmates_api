@@ -154,29 +154,26 @@ export class SpaceService {
         space: true,
       },
     });
-
+    
     const removeTenant = await this.removeTenant(tenantId,ownerId);
     if(removeTenant != true){
       ErrorHelper.BadRequestException("Removing tenant from previous suite failed ")
     }
 
-    
-    
-    
+        
+    //create new subscription
+    const product = await this.stripePaymentService.getProductBySuiteId(suiteId);
+    const price_id = await this.stripePaymentService.getPriceIdByProductId(product.id);
+
     const newSuite = await this.prisma.suite.update({
       where: { id: suiteId },
       data: {
         tenant: { connect: {id: tenantId }}
       },
     });
-    
-    //cancel old subscription
-    const subscription = await this.stripePaymentService.getCurrentSubscriptionBySuiteId(tenant.stripe_customer_id, tenant.suite.id);
-    await this.stripePaymentService.cancelSubscription(subscription.id)
-    
-    //create new subscription
-    const suiteSubscription = await this.stripePaymentService.getSubscriptionBySuiteId(suiteId);
-    await this.stripePaymentService.createSubscription(tenant.stripe_customer_id,suiteSubscription.items.data[0].price.id,""+suiteId);
+   
+
+    await this.stripePaymentService.createSubscription(tenant.stripe_customer_id,price_id,""+suiteId);
 
     return newSuite;
   }
@@ -198,7 +195,21 @@ export class SpaceService {
       },
     });
     const rentHistory = await this.stripePaymentService.getAllPaymentsBySpaceId(""+user.space.id);
-    return rentHistory;
+    let mergedData = [];
+
+  // Fetch suite information for each payment and merge it with the payment object
+  for (let payment of rentHistory) {
+    const suite = await this.prisma.suite.findUnique({
+      where: {id: +payment.suiteId},
+      select:{
+        tenant: true
+      }
+    });
+    const mergedObject = {...payment, ...suite};
+    mergedData.push(mergedObject);
+  }
+
+  return mergedData;
   }
 
   // async retrieveSuiteMaintenanceRequest(userId: number) {
