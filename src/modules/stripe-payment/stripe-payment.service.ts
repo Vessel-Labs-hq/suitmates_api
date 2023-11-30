@@ -174,6 +174,8 @@ export class StripePaymentService {
             amount: invoice.amount_paid / 100, // Convert from cents to dollars
             dateOfPayment: new Date(invoice.created  * 1000), // Convert from Unix timestamp to JavaScript Date
             status: invoice.status,
+            nextPaymentAttempt: invoice.next_payment_attempt,
+            paid: invoice.paid,
           });
         }
       }
