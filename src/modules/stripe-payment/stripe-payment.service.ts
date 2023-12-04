@@ -149,7 +149,48 @@ export class StripePaymentService {
   async getAllPaymentsBySpaceId(spaceId: string) {
    // Retrieve all products with the specific spaceId in their metadata
   const products = await this.stripeClient.products.list();
-  const filteredProducts = products.data.filter(product => product.metadata.spaceId === spaceId);
+  const filteredProducts = products.data.filter(product => product.metadata.spaceId == spaceId);
+
+  let allInvoices = [];
+
+  for (const product of filteredProducts) {
+    // Retrieve all prices associated with the product
+    const prices = await this.stripeClient.prices.list({ product: product.id });
+
+    for (const price of prices.data) {
+      // Retrieve all subscriptions associated with the price
+      const subscriptions = await this.stripeClient.subscriptions.list({ price: price.id });
+
+      for (const subscription of subscriptions.data) {
+        // Retrieve all invoices associated with the subscription
+        const invoices = await this.stripeClient.invoices.list({ subscription: subscription.id });
+
+        // Add the invoices to the allInvoices array
+        for (const invoice of invoices.data) {
+          allInvoices.push({
+            suiteNumber: product.metadata.suiteNumber,
+            suiteId: product.metadata.suiteId,
+            spaceId: product.metadata.spaceId,
+            amount: invoice.amount_paid / 100, // Convert from cents to dollars
+            dateOfPayment: new Date(invoice.created  * 1000), // Convert from Unix timestamp to JavaScript Date
+            status: invoice.status,
+            nextPaymentAttempt: invoice.next_payment_attempt,
+            paid: invoice.paid,
+          });
+        }
+      }
+    }
+  }
+
+  return allInvoices;
+
+  }
+
+  // Retrieve all payments based on spaceId metadata
+  async getAllPaymentsBySuiteId(suiteId: string) {
+   // Retrieve all products with the specific spaceId in their metadata
+  const products = await this.stripeClient.products.list();
+  const filteredProducts = products.data.filter(product => product.metadata.suiteId == suiteId);
 
   let allInvoices = [];
 

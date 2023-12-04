@@ -128,4 +128,14 @@ export class SpaceController {
       message: 'Rent History retrieved successfully',
     });
   }
+
+  @Get('/tenant/rent-history')
+  @Roles(Role.Tenant)
+  async tenantRentHistory(@User() tenant: IUser){
+    const response = await this.spaceService.tenantRentHistory(tenant)
+    return HttpResponse.success({
+      data: response,
+      message: 'Rent History retrieved successfully',
+    });
+  }
 }

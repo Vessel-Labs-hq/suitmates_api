@@ -212,6 +212,33 @@ export class SpaceService {
   return mergedData;
   }
 
+  async tenantRentHistory(tenant){
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: tenant.id,
+      },
+      select: {
+        suite: true,
+      },
+    });
+    const rentHistory = await this.stripePaymentService.getAllPaymentsBySuiteId(""+user.suite.id);
+    let mergedData = [];
+
+  // Fetch suite information for each payment and merge it with the payment object
+  for (let payment of rentHistory) {
+    const suite = await this.prisma.suite.findUnique({
+      where: {id: +payment.suiteId},
+      select:{
+        tenant: true
+      }
+    });
+    const mergedObject = {...payment, ...suite};
+    mergedData.push(mergedObject);
+  }
+
+  return mergedData;
+  }
+
   // async retrieveSuiteMaintenanceRequest(userId: number) {
   //   try {
   //     // Step 1: Retrieve all suites by a user
