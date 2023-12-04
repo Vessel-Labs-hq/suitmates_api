@@ -67,6 +67,25 @@ export class AuthService {
     return;
   }
 
+  async resendInviteMail(userId : number){
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+    });
+    if (!user || user.onboarded == true) {
+      ErrorHelper.ConflictException(
+        `User does not exist or user has been onboarded`,
+      );
+    }
+    const password: string = this.generateRandomString(8);
+    const data = {
+      password: password
+    };
+    await this.userService.update(user.id,data);
+    await this.emailService.sendUserWelcome(user.email, password);
+    return;
+  }
+
   async testEmail() {
     return await this.emailService.sentTestMail();
   }

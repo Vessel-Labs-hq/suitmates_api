@@ -1,4 +1,4 @@
-import { Controller, Post, Body,UseGuards } from '@nestjs/common';
+import { Controller,Param, Post, Body,UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -44,5 +44,14 @@ export class AuthController {
   @Post('verify-token')
   verifyToken(@Body() verifyTokenDto: VerifyTokenDto) {
     return this.authService.VerifyToken(verifyTokenDto);
+  }
+
+  @Post('resend-tenant-invite/:userId')
+  async resendInviteMail(@Param('userId') userId: string){
+    await this.authService.resendInviteMail(+userId);
+    return HttpResponse.success({
+      data: '',
+      message: 'Tenant invited successfully',
+    });
   }
 }
