@@ -36,6 +36,7 @@ export class MaintenanceService {
         suite: { connect: { id: tenant.suite.id } },
         priority: createMaintenanceDto.priority,
         description: createMaintenanceDto.description,
+        category: createMaintenanceDto.category,
         repair_date: null,
         repair_time: null,
       },
@@ -183,6 +184,38 @@ export class MaintenanceService {
     });
   }
 
+  async analyzeMaintenanceRequests(user: any) {
+    const now = new Date();
+    const oneMonthAgo = new Date(now.setMonth(now.getMonth() - 1));
+  
+    const totalRequests = await this.prisma.maintenanceRequest.count({
+      where: { user_id: user.id },
+    });
+  
+    const totalRequestsOneMonthAgo = await this.prisma.maintenanceRequest.count({
+      where: { user_id: user.id, created_at: { lt: oneMonthAgo } },
+    });
+  
+    const unresolvedRequests = await this.prisma.maintenanceRequest.count({
+      where: { user_id: user.id, status: 'PENDING' || 'IN_PROGRESS' },
+    });
+  
+    const unresolvedRequestsOneMonthAgo = await this.prisma.maintenanceRequest.count({
+      where: { user_id: user.id,  status: 'PENDING' || 'IN_PROGRESS' , created_at: { lt: oneMonthAgo } },
+    });
+  
+    const totalRequestPercentageChange = totalRequestsOneMonthAgo !== 0 ? ((totalRequests - totalRequestsOneMonthAgo) / totalRequestsOneMonthAgo) * 100 : null;
+  const unresolvedRequestPercentageChange = unresolvedRequestsOneMonthAgo !== 0 ? ((unresolvedRequests - unresolvedRequestsOneMonthAgo) / unresolvedRequestsOneMonthAgo) * 100 : null;
+
+    return {
+      totalRequests,
+      totalRequestPercentageChange,
+      unresolvedRequests,
+      unresolvedRequestPercentageChange,
+    };
+  }
+
+  
   async updateDateOrStatusRequest(
     id: number,
     updateDto: UpdateDateStatusRequestDto,

@@ -70,6 +70,15 @@ export class MaintenanceController {
     });
   }
 
+  @Get('analyzed')
+  @Roles(Role.Tenant)
+  async analyzeMaintenanceRequests(@User() user: IUser) {
+    return HttpResponse.success({
+      data: await this.maintenanceService.analyzeMaintenanceRequests(user),
+      message: 'Maintenance request retrieved successfully',
+    });
+  }
+
   @Get('owner')
   async getOwnerMaintenanceBoard(@User() user: IUser) {
     return HttpResponse.success({
