@@ -59,6 +59,26 @@ export class SpaceService {
     });
   }
 
+  async findSuites(ownerId: number) {
+
+    const space = await this.prisma.space.findFirst({
+      where: {owner_id: ownerId }
+    });
+
+    const suites = await this.prisma.suite.findMany({
+      where: { space_id: space.id },
+    });
+  
+    const occupiedSuites = suites.filter(suite => suite.tenant_id !== null);
+    const vacantSuites = suites.filter(suite => suite.tenant_id === null);
+  
+    return {
+      totalOccupiedSuites: occupiedSuites.length,
+      totalVacantSuites: vacantSuites.length,
+    };
+  }
+
+  
   async updateSpace(userId: number, updateSpaceDto: UpdateSpaceDto) {
     const user = await this.prisma.user.findUnique({
       where: {

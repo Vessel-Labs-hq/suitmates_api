@@ -52,6 +52,16 @@ export class SpaceController {
     });
   }
   }
+  
+    @Get('/analyzed')
+    @Roles(Role.Owner)
+    async findSuites(@User() user: IUser) {
+      const space = await this.spaceService.findSuites(+user.id);
+      return HttpResponse.success({
+        data: space,
+        message: 'Space retrieved successfully',
+      });
+    }
 
   @Get(':id')
   @Roles(Role.Owner)
