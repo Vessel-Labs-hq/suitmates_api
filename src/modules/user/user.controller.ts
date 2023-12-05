@@ -9,6 +9,8 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Headers,
+  Req
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -25,15 +27,19 @@ import { Roles } from 'src/decorators/roles.decorator';
 import { Role } from 'src/enums/role.enum';
 import { AttachTenantDto } from './dto/attach-tenant.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
+import { RequestWithRawBody } from 'src/interfaces/request-with-raw-body.interface';
+import { StripePaymentService } from '../stripe-payment/stripe-payment.service';
 
-@UseGuards(AuthGuard, RolesGuard)
+
 @Controller('user')
 export class UserController {
   constructor(
     private readonly userService: UserService,
     private readonly awsS3Service: AwsS3Service,
+    private readonly stripePaymentService: StripePaymentService
   ) {}
 
+  @UseGuards(AuthGuard, RolesGuard)
   @Get('/tenants')
   @Roles(Role.Owner)
   async getTenants(@User() user: IUser) {
@@ -44,6 +50,7 @@ export class UserController {
     });
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
   @Get()
   async findAll() {
     const users = await this.userService.findAll();
@@ -54,6 +61,7 @@ export class UserController {
     });
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
   @Get(':id')
   async findOne(@Param('id') id: string, @User() user: IUser) {
     if (user.id !== +id) {
@@ -67,6 +75,7 @@ export class UserController {
     });
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
   @Patch()
   @ValidatedImage('avatar')
   async update(
@@ -90,6 +99,7 @@ export class UserController {
     });
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const user = await this.userService.remove(+id);
@@ -99,6 +109,7 @@ export class UserController {
     });
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
   @Post('/attach-card')
   async attachCard(@Body() attachCardDto: AttachCardDto, @User() user: IUser) {
     const response = await this.userService.attachCard(user, attachCardDto);
@@ -108,6 +119,7 @@ export class UserController {
     });
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
   @Post('/attach-tenant')
   @Roles(Role.Owner)
   async attachTenant(
@@ -121,6 +133,7 @@ export class UserController {
     });
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
   @Post('/update-card')
   async updateCard(@Body() updateCardDto: UpdateCardDto, @User() user: IUser) {
     const response = await this.userService.updateCard(updateCardDto, user);
@@ -128,5 +141,16 @@ export class UserController {
       data: response,
       message: 'Card updated successfully',
     });
+  }
+
+  @Post('stripe-webhook')
+  async webHookListen(@Headers('stripe-signature') signature: string, @Req() req :RequestWithRawBody) {
+     const data = await this.stripePaymentService.webHookListen(req.rawBody,signature)
+    if (data.paid == true) {
+      const user = await this.userService.findByCustomerId(data.customerId);
+      await this.userService.update(user.id, {
+        last_payment_date: data.createdAt
+      })
+    }
   }
 }

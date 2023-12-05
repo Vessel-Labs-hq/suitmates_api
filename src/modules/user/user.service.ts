@@ -44,6 +44,13 @@ export class UserService {
     return await this.prisma.user.findMany();
   }
 
+  async findByCustomerId(customerId: string){
+
+    return await this.prisma.user.findFirst({
+      where: {stripe_customer_id: customerId}
+    });
+  }
+
   async findOne(id: number) {
     return await this.prisma.user.findUnique({
       where: { id },
@@ -71,6 +78,7 @@ export class UserService {
         stripe_payment_method_id: true,
         card_last_digit: true,
         card_name: true,
+        last_payment_date: true,
         created_at: true,
         updated_at: true,
         deleted: true,

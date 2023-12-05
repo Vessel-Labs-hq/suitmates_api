@@ -42,6 +42,10 @@ export class CreateUserDto {
   avatar: string;
 
   @IsOptional()
+  @IsString()
+  last_payment_date: Date;
+
+  @IsOptional()
   @Transform(({ value }) => value.toLowerCase() === 'true')
   @IsBoolean()
   onboarded: boolean;

@@ -1,8 +1,9 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { STRIPE_WEBHOOK_SECRET, STRIPE_CURRENCY } from 'src/base/config';
 import StripeError from 'src/enums/stripeError.enum';
 import { STRIPE_TOKEN } from '@sjnprjl/nestjs-stripe'; // provider token
 import Stripe from 'stripe';
+import { DateHelper, ErrorHelper, PasswordHelper, Utils } from 'src/utils';
 
 @Injectable()
 export class StripePaymentService {
@@ -282,67 +283,36 @@ export class StripePaymentService {
   }
   
 
-  // async webHookListen(req: Buffer, signature: string) {
-  //   try {
-  //     const event = this.stripe.webhooks.constructEvent(
-  //       req,
-  //       signature,
-  //       STRIPE_WEBHOOK_SECRET
-  //     );
-  //     // Handle the event based on the event type
-  //     switch (event.type) {
-  //       case "customer.subscription.created":
-  //         // Subscription was created
-  //         const subscription = event.data.object;
-  //         const customerId = subscription["customer"];
-  //         await this.userService.updateByCustomerId(customerId, {
-  //           isSubscribed: true,
-  //         });
+  async webHookListen(req: Buffer, signature: string) {
 
-  //         break;
-  //       case "customer.subscription.updated":
-  //         // Subscription was updated
-  //         const currentSubscription = event.data.object;
+    try {
+      const event = this.stripeClient.webhooks.constructEvent(
+        req,
+        signature,
+        STRIPE_WEBHOOK_SECRET
+      );
+      let data: {customerId: string, createdAt: Date, paid: boolean};
+      // Handle the event based on the event type
+      switch (event.type) {
+        case "invoice.payment_succeeded":
+          if(event.data.object['paid'] == true){
 
-  //         if (currentSubscription["status"] === "active") {
-  //           // Subscription was renewed
-  //           const customerId = currentSubscription["customer"];
-  //           await this.userService.updateByCustomerId(customerId, {
-  //             isSubscribed: true,
-  //           });
-  //         }
+            const invoicePaymentSucceeded = event.data.object;
+            const customerId = invoicePaymentSucceeded["customer"];
+            const createdAt = invoicePaymentSucceeded["created"];
+            data = {
+              customerId,
+              createdAt: new Date(createdAt  * 1000),
+              paid: true
+            }
+            console.log("stop 3")
 
-  //         if (
-  //           currentSubscription["status"] === "canceled" ||
-  //           currentSubscription["status"] === "past_due"
-  //         ) {
-  //           const customerId = currentSubscription["customer"];
-  //           const Id = customerId["customer"];
-  //           await this.userService.updateByCustomerId(Id, {
-  //             isSubscribed: false,
-  //           });
-  //         }
-  //         break;
-  //       case "customer.subscription.deleted":
-  //         // Subscription was canceled
-  //         // Handle the logic for the subscription cancellation
-
-  //         const subscriptionDel = event.data.object;
-  //         const Id = subscriptionDel["customer"];
-  //         await this.userService.updateByCustomerId(Id, {
-  //           isSubscribed: false,
-  //         });
-
-  //         break;
-  //       default:
-  //         // Unexpected event type
-  //         break;
-  //     }
-
-  //     // res.sendStatus(200);
-  //     return;
-  //   } catch (err) {
-  //     throw new BadRequestException(err);
-  //   }
-  // }
+          }
+          break;
+        }
+        return data;
+    } catch (err) {
+      console.error(err)
+    }
+  }
 }
