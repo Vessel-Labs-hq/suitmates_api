@@ -266,7 +266,7 @@ export class SpaceService {
         if (rent.paid) {
             let date = new Date(rent.dateOfPayment);
             let year = date.getFullYear();
-            let month = date.getMonth() + 1; // getMonth() returns a zero-based value (where zero indicates the first month of the year)
+            let month = date.getMonth() + 1;
 
             let key = `${month}-${year}`;
 
