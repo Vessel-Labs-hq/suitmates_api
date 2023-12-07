@@ -260,25 +260,37 @@ export class SpaceService {
   }
 
   async rentHistoryChart(owner) {
-    let profits = {};
     const rentHistory = await this.ownerRentHistory(owner);
-    rentHistory.forEach(rent => {
-        if (rent.paid) {
-            let date = new Date(rent.dateOfPayment);
-            let year = date.getFullYear();
-            let month = date.getMonth() + 1;
+    let profits = {
+      monthly: {},
+      yearly: {}
+  };
 
-            let key = `${month}-${year}`;
+  rentHistory.forEach(rent => {
+      if (rent.paid) {
+          let date = new Date(rent.dateOfPayment);
+          let year = date.getFullYear();
+          let month = date.getMonth() + 1; 
 
-            if (profits[key]) {
-                profits[key] += rent.amount;
-            } else {
-                profits[key] = rent.amount;
-            }
-        }
-    });
+          let monthKey = `${month}-${year}`;
+          let yearKey = `${year}`;
 
-    return profits;
+          if (profits.monthly[monthKey]) {
+              profits.monthly[monthKey] += rent.amount;
+          } else {
+              profits.monthly[monthKey] = rent.amount;
+          }
+
+          if (profits.yearly[yearKey]) {
+              profits.yearly[yearKey] += rent.amount;
+          } else {
+              profits.yearly[yearKey] = rent.amount;
+          }
+      }
+  });
+
+  return profits;
+
 }
 
 
