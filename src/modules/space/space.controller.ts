@@ -139,6 +139,16 @@ export class SpaceController {
     });
   }
 
+  @Get('/owner/rent-history/chart')
+  @Roles(Role.Owner)
+  async rentHistoryChart(@User() owner: IUser){
+    const response = await this.spaceService.rentHistoryChart(owner)
+    return HttpResponse.success({
+      data: response,
+      message: 'Rent History retrieved successfully',
+    });
+  }
+
   @Get('/tenant/rent-history')
   @Roles(Role.Tenant)
   async tenantRentHistory(@User() tenant: IUser){

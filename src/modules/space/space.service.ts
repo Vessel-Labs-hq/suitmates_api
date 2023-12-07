@@ -259,6 +259,29 @@ export class SpaceService {
   return mergedData;
   }
 
+  async rentHistoryChart(owner) {
+    let profits = {};
+    const rentHistory = await this.ownerRentHistory(owner);
+    rentHistory.forEach(rent => {
+        if (rent.paid) {
+            let date = new Date(rent.dateOfPayment);
+            let year = date.getFullYear();
+            let month = date.getMonth() + 1; // getMonth() returns a zero-based value (where zero indicates the first month of the year)
+
+            let key = `${month}-${year}`;
+
+            if (profits[key]) {
+                profits[key] += rent.amount;
+            } else {
+                profits[key] = rent.amount;
+            }
+        }
+    });
+
+    return profits;
+}
+
+
   // async retrieveSuiteMaintenanceRequest(userId: number) {
   //   try {
   //     // Step 1: Retrieve all suites by a user
