@@ -47,8 +47,8 @@ export class AuthController {
   }
 
   @Post('resend-tenant-invite/:userId')
-  async resendInviteMail(@Param('userId') userId: string){
-    await this.authService.resendInviteMail(+userId);
+  async resendInviteMail(@Param('userId') userId: string,@User() owner: IUser){
+    await this.authService.resendInviteMail(+userId,+owner.id);
     return HttpResponse.success({
       data: '',
       message: 'Tenant invited successfully',

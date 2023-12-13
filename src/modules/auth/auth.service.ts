@@ -51,6 +51,11 @@ export class AuthService {
     const emailExists = await this.prisma.user.findUnique({
       where: { email: payload.email },
     });
+
+    const space = await this.prisma.space.findUnique({
+      where: {owner_id: owner_id}
+    });
+
     if (emailExists) {
       ErrorHelper.ConflictException(
         `User with email ${payload.email} already exist`,
@@ -63,15 +68,20 @@ export class AuthService {
       invited_by: owner_id,
     };
     await this.userService.register(data, 'tenant');
-    await this.emailService.sendUserWelcome(payload.email, password);
+    await this.emailService.sendUserWelcome(payload.email, password, space.space_name);
     return;
   }
 
-  async resendInviteMail(userId : number){
+  async resendInviteMail(userId : number, owner_id: number){
 
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
+    
+    const space = await this.prisma.space.findUnique({
+      where: {owner_id: owner_id}
+    });
+
     if (!user || user.onboarded == true) {
       ErrorHelper.ConflictException(
         `User does not exist or user has been onboarded`,
@@ -82,7 +92,7 @@ export class AuthService {
       password: password
     };
     await this.userService.update(user.id,data);
-    await this.emailService.sendUserWelcome(user.email, password);
+    await this.emailService.sendUserWelcome(user.email, password,space.space_name);
     return;
   }
 
