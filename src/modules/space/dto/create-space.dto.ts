@@ -12,7 +12,7 @@ export class CreateSpaceDto {
   
   @IsNotEmpty()
   @IsNumber()
-  space_size:      number;
+  space_size:      string;
   
   @IsNotEmpty()
   @IsString()
