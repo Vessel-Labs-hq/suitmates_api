@@ -46,9 +46,11 @@ export class AuthController {
     return this.authService.VerifyToken(verifyTokenDto);
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles(Role.Owner)
   @Post('resend-tenant-invite/:userId')
-  async resendInviteMail(@Param('userId') userId: string,@User() owner: IUser){
-    await this.authService.resendInviteMail(+userId,+owner.id);
+  async resendInviteMail(@Param('userId') userId: string,@User() user: IUser){
+    await this.authService.resendInviteMail(+userId,+user.id);
     return HttpResponse.success({
       data: '',
       message: 'Tenant invited successfully',
