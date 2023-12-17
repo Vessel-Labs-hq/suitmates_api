@@ -11,7 +11,7 @@ export class CreateSpaceDto {
   space_address:   string;
   
   @IsNotEmpty()
-  @IsNumber()
+  @IsString()
   space_size:      string;
   
   @IsNotEmpty()
